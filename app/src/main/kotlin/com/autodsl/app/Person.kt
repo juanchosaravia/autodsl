@@ -26,7 +26,7 @@ class Person(
     val friends: List<Person>?
 )
 
-@AutoDsl
+@AutoDsl("createAddress")
 data class Address( // can be used in data classes
     val street: String,
     val zipCode: Int,

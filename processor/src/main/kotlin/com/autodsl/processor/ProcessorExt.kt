@@ -15,6 +15,7 @@
  */
 package com.autodsl.processor
 
+import com.autodsl.annotation.AutoDsl
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
@@ -48,6 +49,14 @@ fun Element.asTypeName(): TypeName {
 
 fun Element.javaToKotlinType(): TypeName =
     asType().asTypeName().javaToKotlinType()
+
+fun AutoDsl?.getDslNameOrDefault(defaultString: String): String {
+    return if (this == null || dslName.isEmpty()) {
+        defaultString
+    } else {
+        dslName
+    }
+}
 
 /**
  * FIXME: Workaround found in this issue:
