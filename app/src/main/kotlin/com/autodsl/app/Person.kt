@@ -30,7 +30,7 @@ class Person(
 data class Address( // can be used in data classes
     val street: String,
     val zipCode: Int,
-    val location: Location?
+    internal val location: Location? // supports internal fields
 )
 
 @AutoDsl

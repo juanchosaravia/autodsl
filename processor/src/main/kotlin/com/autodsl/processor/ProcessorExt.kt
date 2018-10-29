@@ -21,12 +21,17 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.asTypeName
 import com.sun.tools.javac.code.Attribute
+import com.sun.tools.javac.code.Symbol
 import com.sun.tools.javac.code.SymbolMetadata
+import kotlinx.metadata.Flag
+import kotlinx.metadata.Flags
+import kotlinx.metadata.KmClassVisitor
 import kotlinx.metadata.jvm.KotlinClassHeader
 import kotlinx.metadata.jvm.KotlinClassMetadata
 import org.jetbrains.annotations.Nullable
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
+import javax.lang.model.element.TypeElement
 import kotlin.reflect.jvm.internal.impl.builtins.jvm.JavaToKotlinClassMap
 import kotlin.reflect.jvm.internal.impl.name.FqName
 
@@ -47,6 +52,7 @@ fun Element.javaToKotlinType(): TypeName =
 /**
  * FIXME: Workaround found in this issue:
  * https://github.com/square/kotlinpoet/issues/236
+ * // TODO could we use Kotlin metadata to solve this?
  */
 fun TypeName.javaToKotlinType(): TypeName {
     return if (this is ParameterizedTypeName) {
@@ -63,15 +69,37 @@ fun TypeName.javaToKotlinType(): TypeName {
     }
 }
 
+fun TypeElement.isClassInternal(): Boolean {
+    if (this !is Symbol.ClassSymbol) return false
+
+    var isInternal = false
+    val metadata = this.metadata.asKotlinMetadata()
+    if (metadata is KotlinClassMetadata.Class) {
+        metadata.accept(object : KmClassVisitor() {
+            override fun visit(flags: Flags, name: kotlinx.metadata.ClassName) {
+                if (Flag.IS_INTERNAL(flags)) {
+                    isInternal = true
+                }
+                super.visit(flags, name)
+            }
+        })
+    }
+    return isInternal
+}
+
 fun SymbolMetadata.asKotlinMetadata(): KotlinClassMetadata? {
-    val values = this.declarationAttributes[1].values // todo fix
+    val metadataAttributes = this.declarationAttributes.firstOrNull {
+        it.type.asTypeName() is ClassName
+                && (it.type.asTypeName() as ClassName).canonicalName == "kotlin.Metadata"
+    }
+    val metadataClassValues = metadataAttributes?.values ?: return null
     var kind: Int? = null
     var metadataVersion: IntArray? = null
     var bytecodeVersion: IntArray? = null
     var data1: Array<String>? = null
     var data2: Array<String>? = null
 
-    values.forEach { value ->
+    metadataClassValues.forEach { value ->
         when (value.fst.name.toString()) {
             "mv" -> metadataVersion =
                     (value.snd.value as List<Attribute.Constant>).map { it.value.toString().toInt() }.toIntArray()
