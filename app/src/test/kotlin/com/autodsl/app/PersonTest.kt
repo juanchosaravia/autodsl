@@ -15,6 +15,7 @@
  */
 package com.autodsl.app
 
+import com.autodsl.app.general.scores
 import org.junit.Test
 
 class PersonTest {
@@ -41,6 +42,29 @@ class PersonTest {
                         zipCode = 34747
                     }
                 })
+        }
+        scores {
+            points = 2.3
+            rating {
+                stars = 5
+            }
+        }
+    }
+
+    @Test
+    fun validStructureFromDifferentPackages() {
+        scores {
+            points = 5.0
+            rating {
+                stars = 5
+            }
+        }
+    }
+
+    @Test(expected = IllegalStateException::class)
+    fun invalidPersonStructure() {
+        person {
+            name = "Pepe"
         }
     }
 }
