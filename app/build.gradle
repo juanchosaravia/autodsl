@@ -1,0 +1,6 @@
+dependencies {
+    implementation project(":annotation")
+    kapt project(":processor")
+
+    testImplementation 'junit:junit:4.12'
+}
