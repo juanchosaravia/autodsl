@@ -17,7 +17,7 @@ class Person(
 data class Address( // can be used in data classes
     val street: String,
     val zipCode: Int,
-    val location: Location?
+    internal val location: Location? // supports internal fields
 )
 
 @AutoDsl
@@ -116,6 +116,17 @@ dependencies {
 * Configure DSL function name with `@AutoDsl(name="createPerson")`
 * Configurable `@DslMarker`
 * Support external builders with new annotation `@ManualDsl(type=MyBuilder)`.
+
+## Debug
+If you want to debug the processor do the following steps:
+
+1. Run this command:
+    ```text
+    ./gradlew clean :app:build --no-daemon -Dorg.gradle.debug=true -Dkotlin.compiler.execution.strategy="in-process" -Dkotlin.daemon.jvm.options="-Xdebug,-Xrunjdwp:transport=dt_socket\,address=5005\,server=y\,suspend=n"
+    ```
+2. In IntelliJ Idea go to Tools > Edit Configurations > press "+" icon in the left top corner.
+Add a new "Remote". Set a Name and check the "Single instance only" flag to true.
+3. Press "Debug" button to run the newly created "Remote" configuration.
 
 ## License
         

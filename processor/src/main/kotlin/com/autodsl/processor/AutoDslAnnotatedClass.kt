@@ -26,6 +26,7 @@ class AutoDslAnnotatedClass(val classElement: TypeElement) {
 
     private val constructor: Element
     val builderClassName = formatName(classElement.simpleName.toString())
+    val isClassInternalModifier: Boolean
 
     init {
         val publicConstructors: List<Element> = classElement.enclosedElements.filter {
@@ -41,6 +42,7 @@ class AutoDslAnnotatedClass(val classElement: TypeElement) {
             mainConstructor = publicConstructors.first()
         }
         constructor = mainConstructor
+        isClassInternalModifier = classElement.isClassInternal()
     }
 
     fun formatName(classSimpleName: String) = "${classSimpleName}Builder"

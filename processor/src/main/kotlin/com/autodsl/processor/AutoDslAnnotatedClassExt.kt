@@ -29,7 +29,7 @@ private const val BLOCK_FUN_NAME = "block"
 /**
  * Generates a Builder class with the current [AutoDslAnnotatedClass].
  */
-fun AutoDslAnnotatedClass.generateClass(processingEnv: ProcessingEnvironment, isInternal: Boolean) {
+fun AutoDslAnnotatedClass.generateClass(processingEnv: ProcessingEnvironment) {
     val packageOfClass = processingEnv.elementUtils.getPackageOf(classElement).toString()
 
     val generatedSourcesRoot: String = processingEnv.getGeneratedSourcesRoot()
@@ -42,7 +42,7 @@ fun AutoDslAnnotatedClass.generateClass(processingEnv: ProcessingEnvironment, is
     val classBuilder = TypeSpec.classBuilder(builderClassName)
         .primaryConstructor(FunSpec.constructorBuilder().build())
 
-    if (isInternal) {
+    if (this.isClassInternalModifier) {
         classBuilder.addModifiers(KModifier.INTERNAL)
     }
 
@@ -116,7 +116,7 @@ fun AutoDslAnnotatedClass.generateClass(processingEnv: ProcessingEnvironment, is
         .returns(classElementTypeName)
         .addStatement("return $builderClassName().apply($BLOCK_FUN_NAME).build()")
 
-    if (isInternal) {
+    if (this.isClassInternalModifier) {
         extFun.addModifiers(KModifier.INTERNAL)
     }
 

@@ -17,12 +17,6 @@ package com.autodsl.processor
 
 import com.autodsl.annotation.AutoDsl
 import com.google.auto.service.AutoService
-import com.sun.tools.javac.code.Symbol
-import kotlinx.metadata.ClassName
-import kotlinx.metadata.Flag
-import kotlinx.metadata.Flags
-import kotlinx.metadata.KmClassVisitor
-import kotlinx.metadata.jvm.KotlinClassMetadata
 import javax.annotation.processing.*
 import javax.lang.model.SourceVersion
 import javax.lang.model.element.Element
@@ -54,20 +48,6 @@ class AutoDslProcessor : AbstractProcessor() {
             }
             classElement as TypeElement
 
-            var isInternal = false
-            val metadata = (classElement as Symbol.ClassSymbol).metadata.asKotlinMetadata()
-
-            if (metadata is KotlinClassMetadata.Class) {
-                metadata.accept(object : KmClassVisitor() {
-                    override fun visit(flags: Flags, name: ClassName) {
-                        if (Flag.IS_INTERNAL(flags)) {
-                            isInternal = true
-                        }
-                        super.visit(flags, name)
-                    }
-                })
-            }
-
             val modifiers = classElement.modifiers
             // check class is public and not abstract
             if (!modifiers.contains(Modifier.PUBLIC) || modifiers.contains(Modifier.ABSTRACT)) {
@@ -81,7 +61,7 @@ class AutoDslProcessor : AbstractProcessor() {
 
             try {
                 val annotatedClass = AutoDslAnnotatedClass(classElement)
-                annotatedClass.generateClass(processingEnv, isInternal)
+                annotatedClass.generateClass(processingEnv)
             } catch (e: Throwable) {
                 error(classElement, e.message.orEmpty())
                 return true
