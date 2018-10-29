@@ -17,14 +17,18 @@ package com.autodsl.processor
 
 import com.autodsl.annotation.AutoDsl
 import com.google.auto.service.AutoService
-import com.sun.tools.javac.code.Attribute
 import com.sun.tools.javac.code.Symbol
-import kotlinx.metadata.*
-import kotlinx.metadata.jvm.KotlinClassHeader
+import kotlinx.metadata.ClassName
+import kotlinx.metadata.Flag
+import kotlinx.metadata.Flags
+import kotlinx.metadata.KmClassVisitor
 import kotlinx.metadata.jvm.KotlinClassMetadata
 import javax.annotation.processing.*
 import javax.lang.model.SourceVersion
-import javax.lang.model.element.*
+import javax.lang.model.element.Element
+import javax.lang.model.element.ElementKind
+import javax.lang.model.element.Modifier
+import javax.lang.model.element.TypeElement
 import javax.tools.Diagnostic
 
 
@@ -51,25 +55,7 @@ class AutoDslProcessor : AbstractProcessor() {
             classElement as TypeElement
 
             var isInternal = false
-            val values = (classElement as Symbol.ClassSymbol).metadata.declarationAttributes[1].values
-            var kind: Int? = null
-            var metadataVersion: IntArray? = null
-            var bytecodeVersion: IntArray? = null
-            var data1: Array<String>? = null
-            var data2: Array<String>? = null
-
-            values.forEach { value ->
-                when(value.fst.name.toString()) {
-                    "mv" -> metadataVersion = (value.snd.value as List<Attribute.Constant>).map { it.value.toString().toInt() }.toIntArray()
-                    "bv" -> bytecodeVersion = (value.snd.value as List<Attribute.Constant>).map { it.value.toString().toInt() }.toIntArray()
-                    "k" -> kind = value.snd.value.toString().toInt()
-                    "d1" -> data1 = (value.snd.value as List<Attribute.Constant>).map { it.value.toString() }.toTypedArray()
-                    "d2" -> data2 = (value.snd.value as List<Attribute.Constant>).map { it.value.toString() }.toTypedArray()
-                }
-            }
-
-            val header = KotlinClassHeader(kind, metadataVersion, bytecodeVersion, data1, data2, null, null, null)
-            val metadata = KotlinClassMetadata.read(header)
+            val metadata = (classElement as Symbol.ClassSymbol).metadata.asKotlinMetadata()
 
             if (metadata is KotlinClassMetadata.Class) {
                 metadata.accept(object : KmClassVisitor() {
