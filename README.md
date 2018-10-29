@@ -13,7 +13,7 @@ class Person(
     val friends: List<Person>?
 )
 
-@AutoDsl
+@AutoDsl("createAddress") // can specify custom name for dsl creation
 data class Address( // can be used in data classes
     val street: String,
     val zipCode: Int,
@@ -46,7 +46,7 @@ This will allow you to create those classes like this:
 person {
     name = "Juan"
     age = 34
-    address {
+    createAddress {
         street = "200 Celebration Bv"
         zipCode = 34747
         location {
@@ -57,7 +57,8 @@ person {
 }
 ```
 For this example, the processor will detect that "Address" is also marked with "@AutoDsl" 
-so it will provide an extra function to initialize the field directly using the builder. 
+so it will provide an extra function to initialize the field directly using the builder, 
+with the custom builder name, if any.
 
 #### Auto generated builder
 Internally will be generating the builder class and extension function for the annotated class.
@@ -76,7 +77,7 @@ class PersonBuilder() {
     var friends: List<Person>? = null
     
     // extra function to inline declaration for fields with classes annotated with AutoDsl
-    fun address(block: AddressBuilder.() -> Unit): PersonBuilder = this.apply { this.address = AddressBuilder().apply(block).build() }
+    fun createAddress(block: AddressBuilder.() -> Unit): PersonBuilder = this.apply { this.address = AddressBuilder().apply(block).build() }
 
     fun build(): Person = Person(name, age, address, friends)
     
@@ -113,7 +114,6 @@ dependencies {
 * Does not support private constructors.
 
 ## Pending Features
-* Configure DSL function name with `@AutoDsl(name="createPerson")`
 * Configurable `@DslMarker`
 * Support external builders with new annotation `@ManualDsl(type=MyBuilder)`.
 
