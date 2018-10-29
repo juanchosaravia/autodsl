@@ -25,7 +25,7 @@ import javax.lang.model.element.TypeElement
 class AutoDslAnnotatedClass(val classElement: TypeElement) {
 
     private val constructor: Element
-    val builderClassName = formatName(classElement.simpleName.toString())
+    val builderClassName = formatToBuilderName(classElement.simpleName.toString())
     val isClassInternalModifier: Boolean
 
     init {
@@ -45,6 +45,6 @@ class AutoDslAnnotatedClass(val classElement: TypeElement) {
         isClassInternalModifier = classElement.isClassInternal()
     }
 
-    fun formatName(classSimpleName: String) = "${classSimpleName}Builder"
+    fun formatToBuilderName(classSimpleName: String) = "${classSimpleName}Builder"
     fun getParams(): List<Symbol.VarSymbol> = (constructor as Symbol.MethodSymbol).params
 }

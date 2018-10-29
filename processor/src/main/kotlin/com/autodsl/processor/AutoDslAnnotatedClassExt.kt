@@ -36,6 +36,9 @@ fun AutoDslAnnotatedClass.generateClass(processingEnv: ProcessingEnvironment) {
     if (generatedSourcesRoot.isEmpty()) {
         throw ProcessingException(this.classElement, "Can't find the target directory for generated Kotlin files.")
     }
+    val file = File(generatedSourcesRoot)
+    file.mkdir()
+    val fileSpec = FileSpec.builder(packageOfClass, builderClassName)
 
     val classBuilderClassName = processingEnv.getClassName(classElement, builderClassName)
     // create builder class
@@ -64,8 +67,10 @@ fun AutoDslAnnotatedClass.generateClass(processingEnv: ProcessingEnvironment) {
         if (paramTypeElement.getAnnotation(AutoDsl::class.java) != null) {
             // fun address(block: AddressBuilder.() -> Unit): PersonBuilder = this.apply { this.address = AddressBuilder().apply(block).build() }
             val paramTypeName = paramTypeElement.simpleName.toString()
-            val paramBuilderName = formatName(paramTypeName)
-            val paramBuilderClassName = processingEnv.getClassName(param, paramBuilderName)
+            val paramBuilderName = formatToBuilderName(paramTypeName)
+            val paramBuilderClassName = processingEnv.getClassName(paramTypeElement, paramBuilderName)
+            // add import as the class could be defined in another package
+            fileSpec.addImport(paramBuilderClassName.packageName, paramBuilderClassName.simpleName)
             classBuilder.addFunction(
                 FunSpec.builder(paramSimpleName)
                     .addParameter(
@@ -120,10 +125,7 @@ fun AutoDslAnnotatedClass.generateClass(processingEnv: ProcessingEnvironment) {
         extFun.addModifiers(KModifier.INTERNAL)
     }
 
-    val file = File(generatedSourcesRoot)
-    file.mkdir()
-    FileSpec.builder(packageOfClass, builderClassName)
-        .addFunction(extFun.build())
+    fileSpec.addFunction(extFun.build())
         .addType(classBuilder.build())
         .build().writeTo(file)
 }
