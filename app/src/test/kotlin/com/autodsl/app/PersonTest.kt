@@ -25,7 +25,7 @@ class PersonTest {
         person {
             name = "Juan"
             age = 34
-            address {
+            createAddress {
                 street = "200 Celebration Bv"
                 zipCode = 34747
                 location {
@@ -37,7 +37,7 @@ class PersonTest {
                 person {
                     name = "Arturo"
                     age = 30
-                    address {
+                    createAddress {
                         street = "1600 Latta Dr"
                         zipCode = 34747
                     }

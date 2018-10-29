@@ -64,7 +64,8 @@ fun AutoDslAnnotatedClass.generateClass(processingEnv: ProcessingEnvironment) {
 
         // check param has an associated auto-generated builder and create DSL function
         val paramTypeElement = param.type.asElement()
-        if (paramTypeElement.getAnnotation(AutoDsl::class.java) != null) {
+        val paramTypeElementAnnotation = paramTypeElement.getAnnotation(AutoDsl::class.java)
+        if (paramTypeElementAnnotation != null) {
             // fun address(block: AddressBuilder.() -> Unit): PersonBuilder = this.apply { this.address = AddressBuilder().apply(block).build() }
             val paramTypeName = paramTypeElement.simpleName.toString()
             val paramBuilderName = formatToBuilderName(paramTypeName)
@@ -72,7 +73,7 @@ fun AutoDslAnnotatedClass.generateClass(processingEnv: ProcessingEnvironment) {
             // add import as the class could be defined in another package
             fileSpec.addImport(paramBuilderClassName.packageName, paramBuilderClassName.simpleName)
             classBuilder.addFunction(
-                FunSpec.builder(paramSimpleName)
+                FunSpec.builder(paramTypeElementAnnotation.getDslNameOrDefault(paramSimpleName))
                     .addParameter(
                         ParameterSpec.builder(
                             BLOCK_FUN_NAME,
@@ -116,7 +117,9 @@ fun AutoDslAnnotatedClass.generateClass(processingEnv: ProcessingEnvironment) {
         )
     ).build()
 
-    val extFun = FunSpec.builder(classElement.simpleName.toString().decapitalize())
+    val classElementAnnotation = classElement.getAnnotation(AutoDsl::class.java)
+    val extFunName = classElementAnnotation.getDslNameOrDefault(classElement.simpleName.toString().decapitalize())
+    val extFun = FunSpec.builder(extFunName)
         .addParameter(extensionFunParams)
         .returns(classElementTypeName)
         .addStatement("return $builderClassName().apply($BLOCK_FUN_NAME).build()")

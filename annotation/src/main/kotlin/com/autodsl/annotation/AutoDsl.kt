@@ -20,4 +20,4 @@ package com.autodsl.annotation
  */
 @Retention(AnnotationRetention.SOURCE)
 @Target(AnnotationTarget.CLASS)
-annotation class AutoDsl()
+annotation class AutoDsl(val dslName: String = "")
