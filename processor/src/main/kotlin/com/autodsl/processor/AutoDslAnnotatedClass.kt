@@ -25,7 +25,7 @@ import javax.lang.model.element.TypeElement
 class AutoDslAnnotatedClass(val classElement: TypeElement) {
 
     private val constructor: Element
-    val builderClassName = formatToBuilderName(classElement.simpleName.toString())
+    val builderClassName = classElement.simpleName.toString().toAutoDslBuilderName()
     val isClassInternalModifier: Boolean
 
     init {

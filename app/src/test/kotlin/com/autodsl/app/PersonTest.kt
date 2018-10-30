@@ -43,12 +43,6 @@ class PersonTest {
                     }
                 })
         }
-        scores {
-            points = 2.3
-            rating {
-                stars = 5
-            }
-        }
     }
 
     @Test
@@ -58,6 +52,22 @@ class PersonTest {
             rating {
                 stars = 5
             }
+        }
+    }
+
+    @Test
+    fun validStructureWithNoLocationAddress() {
+        createAddress {
+            street = "Street"
+            zipCode = 1000
+        }
+    }
+
+    @Test(expected = IllegalStateException::class)
+    fun invalidAddressStructure() {
+        createAddress {
+            street = "Street"
+            location = Location()
         }
     }
 

@@ -65,9 +65,9 @@ Internally will be generating the builder class and extension function for the a
 Let's take `People` as example, the code will look like this:
 
 ```kotlin
-fun person(block: PersonBuilder.() -> Unit): Person = PersonBuilder().apply(block).build()
+fun person(block: PersonAutoDslBuilder.() -> Unit): Person = PersonAutoDslBuilder().apply(block).build()
 
-class PersonBuilder() {
+class PersonAutoDslBuilder() {
     var name: String by Delegates.notNull()
 
     var age: Int by Delegates.notNull()
@@ -77,7 +77,7 @@ class PersonBuilder() {
     var friends: List<Person>? = null
     
     // extra function to inline declaration for fields with classes annotated with AutoDsl
-    fun createAddress(block: AddressBuilder.() -> Unit): PersonBuilder = this.apply { this.address = AddressBuilder().apply(block).build() }
+    fun createAddress(block: AddressAutoDslBuilder.() -> Unit): PersonAutoDslBuilder = this.apply { this.address = AddressAutoDslBuilder().apply(block).build() }
 
     fun build(): Person = Person(name, age, address, friends)
     
@@ -115,7 +115,7 @@ dependencies {
 
 ## Pending Features
 * Configurable `@DslMarker`
-* Support external builders with new annotation `@ManualDsl(type=MyBuilder)`.
+* Support external builders with new annotation `@ManualDsl(type=MyBuilder::class)`.
 
 ## Debug
 If you want to debug the processor do the following steps:

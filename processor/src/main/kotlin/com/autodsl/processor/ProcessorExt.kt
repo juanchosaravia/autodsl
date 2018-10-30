@@ -123,3 +123,5 @@ fun SymbolMetadata.asKotlinMetadata(): KotlinClassMetadata? {
     val header = KotlinClassHeader(kind, metadataVersion, bytecodeVersion, data1, data2, null, null, null)
     return KotlinClassMetadata.read(header)
 }
+
+fun String.toAutoDslBuilderName() = "${this}AutoDslBuilder"

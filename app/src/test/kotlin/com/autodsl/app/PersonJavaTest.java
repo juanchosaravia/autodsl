@@ -21,10 +21,10 @@ public class PersonJavaTest {
 
     @Test
     public void testPerson() {
-        new PersonBuilder()
+        new PersonAutoDslBuilder()
                 .withName("Juan")
                 .withAge(12)
-                .withAddress(new AddressBuilder()
+                .withAddress(new AddressAutoDslBuilder()
                         .withStreet("200 Celebration Bv")
                         .withZipCode(34747)
                         .build())

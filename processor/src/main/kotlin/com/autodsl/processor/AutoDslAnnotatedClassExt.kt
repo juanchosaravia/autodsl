@@ -49,66 +49,47 @@ fun AutoDslAnnotatedClass.generateClass(processingEnv: ProcessingEnvironment) {
         classBuilder.addModifiers(KModifier.INTERNAL)
     }
 
-    // add each constructor param as property in builder class
+    // create properties from the available constructor
     this.getParams().forEach { param: Symbol.VarSymbol ->
         val paramSimpleName = param.simpleName.toString()
-        val propBuilder = PropertySpec.builder(paramSimpleName, param.asTypeName()).mutable()
-        if (param.getAnnotation(Nullable::class.java) != null) {
-            // nullable element
-            propBuilder.initializer("null")
-        } else {
-            // non null element
-            propBuilder.delegate("%T.notNull()", Delegates::class)
-        }
-        classBuilder.addProperty(propBuilder.build())
+        classBuilder.addProperty(createPropertySpec(paramSimpleName, param).build())
 
         // check param has an associated auto-generated builder and create DSL function
-        val paramTypeElement = param.type.asElement()
-        val paramTypeElementAnnotation = paramTypeElement.getAnnotation(AutoDsl::class.java)
-        if (paramTypeElementAnnotation != null) {
-            // fun address(block: AddressBuilder.() -> Unit): PersonBuilder = this.apply { this.address = AddressBuilder().apply(block).build() }
-            val paramTypeName = paramTypeElement.simpleName.toString()
-            val paramBuilderName = formatToBuilderName(paramTypeName)
-            val paramBuilderClassName = processingEnv.getClassName(paramTypeElement, paramBuilderName)
-            // add import as the class could be defined in another package
-            fileSpec.addImport(paramBuilderClassName.packageName, paramBuilderClassName.simpleName)
-            classBuilder.addFunction(
-                FunSpec.builder(paramTypeElementAnnotation.getDslNameOrDefault(paramSimpleName))
-                    .addParameter(
-                        ParameterSpec.builder(
-                            BLOCK_FUN_NAME,
-                            LambdaTypeName.get(
-                                receiver = paramBuilderClassName,
-                                returnType = Unit::class.asTypeName()
-                            )
-                        ).build()
-                    )
-                    .returns(classBuilderClassName)
-                    .addStatement("return this.apply { this.$paramSimpleName = $paramBuilderName().apply($BLOCK_FUN_NAME).build() }")
-                    .build()
-            )
+        createFunIfAnnotatedAutoDsl(param, paramSimpleName, classBuilderClassName, processingEnv)?.let {
+            fileSpec.addImport(it.packageName, it.name)
+            classBuilder.addFunction(it.funSpec)
         }
 
         // creates function for builder to be used in Java: "withVariable(..) = this.apply { .. } "
-        val funcBuilder = FunSpec.builder("with${paramSimpleName.capitalize()}")
-            .addParameter(paramSimpleName, param.asTypeName())
-            .returns(classBuilderClassName)
-            .addStatement("return this.apply { this.$paramSimpleName = $paramSimpleName }")
-
+        val funcBuilder = createWithFun(paramSimpleName, param, classBuilderClassName)
         classBuilder.addFunction(funcBuilder.build())
     }
 
     val classElementTypeName = classElement.asType().asTypeName()
     // add build function to create real object
-    classBuilder.addFunction(
-        FunSpec.builder("build")
-            .returns(classElementTypeName)
-            // todo improve this
-            .addStatement("return ${classElement.simpleName}(${this.getParams().joinToString { it.simpleName }})")
-            .build()
-    )
+    val buildFunSpec = createBuildFun(classElementTypeName)
+    classBuilder.addFunction(buildFunSpec)
 
     // create extension function for DSL
+    val extFun = createDslExtFun(classBuilderClassName, classElementTypeName)
+
+    fileSpec.addFunction(extFun.build())
+        .addType(classBuilder.build())
+        .build().writeTo(file)
+}
+
+private fun AutoDslAnnotatedClass.createBuildFun(classElementTypeName: TypeName): FunSpec {
+    return FunSpec.builder("build")
+        .returns(classElementTypeName)
+        // todo improve this
+        .addStatement("return ${classElement.simpleName}(${getParams().joinToString { it.simpleName }})")
+        .build()
+}
+
+private fun AutoDslAnnotatedClass.createDslExtFun(
+    classBuilderClassName: ClassName,
+    classElementTypeName: TypeName
+): FunSpec.Builder {
     val extensionFunParams = ParameterSpec.builder(
         BLOCK_FUN_NAME,
         LambdaTypeName.get(
@@ -127,11 +108,70 @@ fun AutoDslAnnotatedClass.generateClass(processingEnv: ProcessingEnvironment) {
     if (this.isClassInternalModifier) {
         extFun.addModifiers(KModifier.INTERNAL)
     }
-
-    fileSpec.addFunction(extFun.build())
-        .addType(classBuilder.build())
-        .build().writeTo(file)
+    return extFun
 }
+
+private fun createWithFun(
+    paramSimpleName: String,
+    param: Symbol.VarSymbol,
+    classBuilderClassName: ClassName
+): FunSpec.Builder {
+    return FunSpec.builder("with${paramSimpleName.capitalize()}")
+        .addParameter(paramSimpleName, param.asTypeName())
+        .returns(classBuilderClassName)
+        .addStatement("return this.apply { this.$paramSimpleName = $paramSimpleName }")
+}
+
+private fun createPropertySpec(
+    paramSimpleName: String,
+    param: Symbol.VarSymbol
+): PropertySpec.Builder {
+    val propBuilder = PropertySpec.builder(paramSimpleName, param.asTypeName()).mutable()
+    if (param.getAnnotation(Nullable::class.java) != null) {
+        // nullable element
+        propBuilder.initializer("null")
+    } else {
+        // non null element
+        propBuilder.delegate("%T.notNull()", Delegates::class)
+    }
+    return propBuilder
+}
+
+private fun createFunIfAnnotatedAutoDsl(
+    param: Symbol.VarSymbol,
+    paramSimpleName: String,
+    classBuilderClassName: ClassName,
+    processingEnv: ProcessingEnvironment
+): FunAnnotatedAutoDsl? {
+    val paramTypeElement = param.type.asElement()
+    val paramTypeElementAnnotation = paramTypeElement.getAnnotation(AutoDsl::class.java) ?: return null
+
+    // fun address(block: AddressBuilder.() -> Unit): PersonBuilder = this.apply { this.address = AddressBuilder().apply(block).build() }
+    val paramTypeName = paramTypeElement.simpleName.toString()
+    val paramBuilderName = paramTypeName.toAutoDslBuilderName()
+    val paramBuilderClassName = processingEnv.getClassName(paramTypeElement, paramBuilderName)
+    val funSpec = FunSpec.builder(paramTypeElementAnnotation.getDslNameOrDefault(paramSimpleName))
+        .addParameter(
+            ParameterSpec.builder(
+                BLOCK_FUN_NAME,
+                LambdaTypeName.get(
+                    receiver = paramBuilderClassName,
+                    returnType = Unit::class.asTypeName()
+                )
+            ).build()
+        )
+        .returns(classBuilderClassName)
+        .addStatement("return this.apply { this.$paramSimpleName = $paramBuilderName().apply($BLOCK_FUN_NAME).build() }")
+        .build()
+
+    return FunAnnotatedAutoDsl(funSpec, paramBuilderClassName.packageName, paramBuilderClassName.simpleName)
+}
+
+private class FunAnnotatedAutoDsl(
+    val funSpec: FunSpec,
+    val packageName: String,
+    val name: String
+)
 
 private fun ProcessingEnvironment.getClassName(element: Element, className: String): ClassName {
     return ClassName(elementUtils.getPackageOf(element).toString(), className)
