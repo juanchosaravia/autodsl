@@ -1,16 +1,48 @@
 # Auto-DSL for Kotlin
-Auto-generate DSL for Kotlin classes using annotations.
+Auto-generate [DSL (Domain Specific Language)](https://en.wikipedia.org/wiki/Domain-specific_language) for your Kotlin classes using annotations.
 
 [![](https://jitpack.io/v/juanchosaravia/autodsl.svg)](https://jitpack.io/#juanchosaravia/autodsl)
 
+No more boilerplate code to create your own DSL. 
 
+Create expressive DSL with your Kotlin classes like this:
 ```kotlin
-@AutoDsl // indicates to create an associated Builder for this class
+val me = person {
+    name = "Juan"
+    age = 34
+    createAddress {
+        street = "200 Celebration Bv"
+        zipCode = 34747
+        location {
+            lat = 100f
+            lng = 100f
+        }
+    }
+    friends {
+        for (i in 1..3) {
+            +person {
+                name = "Friend_$i"
+                age = i
+                createAddress {
+                    street = "$i Street"
+                    zipCode = i
+                }
+            }
+        }
+    }
+}
+```
+
+To generate the previous DSL, you just need these classes and the AutoDsl annotations:
+```kotlin
+@AutoDsl
 class Person(
     val name: String,
     val age: Int,
     val address: Address,
-    val friends: List<Person>?
+    @AutoDslCollection(mutableType = ArrayList::class) // optional: generates better DSL integration with Collections
+    val friends: List<Person>?,
+    val keys: Set<String>?
 )
 
 @AutoDsl("createAddress") // can specify custom name for dsl creation
@@ -36,26 +68,8 @@ class Location {
         this.lng = lng
     }
 }
-
-@AutoDsl
-internal class Box // supports internal classes
 ```
 
-This will allow you to create those classes like this:
-```kotlin
-person {
-    name = "Juan"
-    age = 34
-    createAddress {
-        street = "200 Celebration Bv"
-        zipCode = 34747
-        location {
-            lat = 100f
-            lng = 100f
-        }
-    }
-}
-```
 For this example, the processor will detect that "Address" is also marked with "@AutoDsl" 
 so it will provide an extra function to initialize the field directly using the builder, 
 with the custom builder name, if any.
@@ -69,17 +83,19 @@ fun person(block: PersonAutoDslBuilder.() -> Unit): Person = PersonAutoDslBuilde
 
 class PersonAutoDslBuilder() {
     var name: String by Delegates.notNull()
-
     var age: Int by Delegates.notNull()
-
     var address: Address by Delegates.notNull()
-
+    
     var friends: List<Person>? = null
+    var keys: Set<String>? = null
     
     // extra function to inline declaration for fields with classes annotated with AutoDsl
     fun createAddress(block: AddressAutoDslBuilder.() -> Unit): PersonAutoDslBuilder = this.apply { this.address = AddressAutoDslBuilder().apply(block).build() }
+    
+    // function to improve DSL integrating with Collections
+    fun friends(block: FriendsAutoDslCollection.() -> Unit): PersonAutoDslBuilder = this.apply { this.friends = FriendsAutoDslCollection().apply { block() }.collection }
 
-    fun build(): Person = Person(name, age, address, friends)
+    fun build(): Person = Person(name, age, address, friends, keys)
     
     // continue...
 }
@@ -87,6 +103,10 @@ class PersonAutoDslBuilder() {
 
 For required parameters like `name` the build will fail if it is not set indicating exactly which field is missed.
 To make it optional just set a default value like `friends`. This value will be null in case it's not set.
+
+#### Examples
+- Declaration: [Person.kt](app/src/main/kotlin/com/autodsl/app/Person.kt)
+- Usage: [PersonTest.kt](app/src/test/kotlin/com/autodsl/app/PersonTest.kt)
 
 ## Download
 

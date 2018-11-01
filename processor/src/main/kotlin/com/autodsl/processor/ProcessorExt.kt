@@ -30,15 +30,25 @@ import kotlinx.metadata.KmClassVisitor
 import kotlinx.metadata.jvm.KotlinClassHeader
 import kotlinx.metadata.jvm.KotlinClassMetadata
 import org.jetbrains.annotations.Nullable
+import java.lang.IllegalStateException
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.lang.model.element.TypeElement
+import javax.tools.Diagnostic
 import kotlin.reflect.jvm.internal.impl.builtins.jvm.JavaToKotlinClassMap
 import kotlin.reflect.jvm.internal.impl.name.FqName
 
+fun ProcessingEnvironment.error(e: ProcessingException) {
+    this.error(e.element, e.message ?: "There was an error processing this element.")
+}
+
+fun ProcessingEnvironment.error(e: Element, msg: String, vararg args: String) {
+    messager?.printMessage(Diagnostic.Kind.ERROR, String.format(msg, args), e)
+}
+
 fun ProcessingEnvironment.getGeneratedSourcesRoot(): String {
     return this.options[AutoDslProcessor.KAPT_KOTLIN_GENERATED_OPTION_NAME]
-        ?: throw ProcessingException(msg = "No source root for generated file")
+        ?: throw IllegalStateException("No source root for generated file")
 }
 
 fun Element.asTypeName(): TypeName {
@@ -125,3 +135,4 @@ fun SymbolMetadata.asKotlinMetadata(): KotlinClassMetadata? {
 }
 
 fun String.toAutoDslBuilderName() = "${this}AutoDslBuilder"
+fun String.toAutoDslCollectionClassName() = "${this.capitalize()}AutoDslCollection"

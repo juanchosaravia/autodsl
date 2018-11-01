@@ -21,5 +21,6 @@ import com.autodsl.app.personal.Rating
 @AutoDsl
 class Scores(
     val points: Double,
-    val rating: Rating
+    val rating: Rating,
+    val attempts: Attempts?
 )

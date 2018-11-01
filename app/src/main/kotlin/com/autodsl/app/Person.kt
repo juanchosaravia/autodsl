@@ -16,6 +16,7 @@
 package com.autodsl.app
 
 import com.autodsl.annotation.AutoDsl
+import com.autodsl.annotation.AutoDslCollection
 import com.autodsl.annotation.AutoDslConstructor
 
 @AutoDsl // indicates to create an associated Builder for this class
@@ -23,7 +24,9 @@ class Person(
     val name: String,
     val age: Int,
     val address: Address,
-    val friends: List<Person>?
+    @AutoDslCollection(mutableType = ArrayList::class) // generates better DSL integration with Collections
+    val friends: List<Person>?,
+    val keys: Set<String>?
 )
 
 @AutoDsl("createAddress")
@@ -51,4 +54,8 @@ class Location {
 }
 
 @AutoDsl
-internal class Box // supports internal classes
+internal class Box( // supports internal classes
+    @AutoDslCollection(mutableType = HashSet::class)
+    val items: Set<String>,
+    val stamps: List<String>?
+)

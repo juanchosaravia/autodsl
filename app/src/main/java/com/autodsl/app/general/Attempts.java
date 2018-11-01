@@ -13,12 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.autodsl.processor
+package com.autodsl.app.general;
 
-import javax.lang.model.element.Element
+public class Attempts {
 
-class ProcessingException(
-    val element: Element,
-    msg: String,
-    vararg args: String
-) : Exception(String.format(msg, args))
+    private final int counter;
+
+    public Attempts(int counter) {
+        this.counter = counter;
+    }
+
+    public int getCounter() {
+        return counter;
+    }
+}

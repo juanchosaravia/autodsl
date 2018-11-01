@@ -16,12 +16,16 @@
 package com.autodsl.processor
 
 import com.autodsl.annotation.AutoDsl
+import com.autodsl.annotation.AutoDslCollection
 import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.plusParameter
 import com.sun.tools.javac.code.Symbol
 import org.jetbrains.annotations.Nullable
 import java.io.File
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
+import javax.lang.model.type.DeclaredType
+import javax.lang.model.type.MirroredTypeException
 import kotlin.properties.Delegates
 
 private const val BLOCK_FUN_NAME = "block"
@@ -54,10 +58,26 @@ fun AutoDslAnnotatedClass.generateClass(processingEnv: ProcessingEnvironment) {
         val paramSimpleName = param.simpleName.toString()
         classBuilder.addProperty(createPropertySpec(paramSimpleName, param).build())
 
+        val paramTypeElement = param.asType().asElement()
+
         // check param has an associated auto-generated builder and create DSL function
-        createFunIfAnnotatedAutoDsl(param, paramSimpleName, classBuilderClassName, processingEnv)?.let {
+        createFunIfAnnotatedAutoDsl(
+            paramTypeElement,
+            paramSimpleName,
+            classBuilderClassName,
+            processingEnv
+        )?.let {
             fileSpec.addImport(it.packageName, it.name)
             classBuilder.addFunction(it.funSpec)
+        }
+
+        try {
+            createFunIfAnnotatedWithCollection(param, paramSimpleName, classBuilderClassName)?.let {
+                classBuilder.addType(it.nestedClass)
+                classBuilder.addFunction(it.collectionFun)
+            }
+        } catch (e: ProcessingException) {
+            processingEnv.error(e)
         }
 
         // creates function for builder to be used in Java: "withVariable(..) = this.apply { .. } "
@@ -81,7 +101,7 @@ fun AutoDslAnnotatedClass.generateClass(processingEnv: ProcessingEnvironment) {
 private fun AutoDslAnnotatedClass.createBuildFun(classElementTypeName: TypeName): FunSpec {
     return FunSpec.builder("build")
         .returns(classElementTypeName)
-        // todo improve this
+        // todo improve this loop
         .addStatement("return ${classElement.simpleName}(${getParams().joinToString { it.simpleName }})")
         .build()
 }
@@ -137,13 +157,90 @@ private fun createPropertySpec(
     return propBuilder
 }
 
-private fun createFunIfAnnotatedAutoDsl(
+private fun createFunIfAnnotatedWithCollection(
     param: Symbol.VarSymbol,
+    paramSimpleName: String,
+    classBuilderClassName: ClassName
+): AutoDslCollectionData? {
+    val collectionAnnotation = param.getAnnotation(AutoDslCollection::class.java) ?: return null
+    val parameterizedClassName =
+        ((param.asType().asTypeName() as? ParameterizedTypeName)?.typeArguments?.get(0)?.javaToKotlinType() as? ClassName)
+            ?: throw ProcessingException(param, "Annotated field has no parameterized value")
+
+    var collectionAnnotationClassName: ClassName
+    try {
+        collectionAnnotationClassName = collectionAnnotation.mutableType.asTypeName().javaToKotlinType() as ClassName
+    } catch (e: MirroredTypeException) {
+        if (e.typeMirror !is DeclaredType) {
+            throw ProcessingException(
+                param,
+                "The given type is not supported by AutoDslCollection. Make sure the selected class is a DeclaredType."
+            )
+        }
+        collectionAnnotationClassName = (e.typeMirror as DeclaredType).asTypeName().javaToKotlinType() as ClassName
+    }
+
+    /*
+    Review: This could be improved if we detect there is no repeated parameterized type so we can create a list
+    directly in the builder and leverage the use of a class only if it's repeated so we can avoid issues with
+    two lists having the same parameterized type and both trying to define unaryPLus method.
+
+    example:
+    private val __auto_dsl_collection: ArrayList<Person> = ArrayList()
+    operator fun Person.unaryPlus() {
+        __auto_dsl_collection.add(this)}
+     */
+
+    val collectionFieldName = "collection"
+    val collectionClassNameValue = paramSimpleName.toAutoDslCollectionClassName()
+    val nestedClass = TypeSpec.classBuilder(collectionClassNameValue)
+        .primaryConstructor(FunSpec.constructorBuilder().addModifiers(KModifier.INTERNAL).build())
+        .addProperty(
+            PropertySpec.builder(
+                collectionFieldName,
+                collectionAnnotationClassName.plusParameter(parameterizedClassName),
+                KModifier.INTERNAL
+            )
+                .initializer("%T()", collectionAnnotationClassName)
+                .build()
+        )
+        .addFunction(
+            FunSpec.builder("unaryPlus")
+                .addModifiers(KModifier.OPERATOR)
+                .receiver(parameterizedClassName)
+                .addCode("$collectionFieldName.add(this)")
+                .build()
+        )
+        .build()
+
+    val collectionFun = FunSpec.builder(paramSimpleName)
+        .addParameter(
+            ParameterSpec.builder(
+                BLOCK_FUN_NAME,
+                LambdaTypeName.get(
+                    receiver = ClassName.bestGuess(collectionClassNameValue),
+                    returnType = Unit::class.asTypeName()
+                )
+            ).build()
+        )
+        .returns(classBuilderClassName)
+        .addStatement("return this.apply { this.$paramSimpleName = $collectionClassNameValue().apply { $BLOCK_FUN_NAME() }.$collectionFieldName }")
+        .build()
+
+    return AutoDslCollectionData(collectionFun, nestedClass)
+}
+
+private class AutoDslCollectionData(
+    val collectionFun: FunSpec,
+    val nestedClass: TypeSpec
+)
+
+private fun createFunIfAnnotatedAutoDsl(
+    paramTypeElement: Symbol.TypeSymbol,
     paramSimpleName: String,
     classBuilderClassName: ClassName,
     processingEnv: ProcessingEnvironment
-): FunAnnotatedAutoDsl? {
-    val paramTypeElement = param.type.asElement()
+): AutoDslFunctionData? {
     val paramTypeElementAnnotation = paramTypeElement.getAnnotation(AutoDsl::class.java) ?: return null
 
     // fun address(block: AddressBuilder.() -> Unit): PersonBuilder = this.apply { this.address = AddressBuilder().apply(block).build() }
@@ -164,10 +261,10 @@ private fun createFunIfAnnotatedAutoDsl(
         .addStatement("return this.apply { this.$paramSimpleName = $paramBuilderName().apply($BLOCK_FUN_NAME).build() }")
         .build()
 
-    return FunAnnotatedAutoDsl(funSpec, paramBuilderClassName.packageName, paramBuilderClassName.simpleName)
+    return AutoDslFunctionData(funSpec, paramBuilderClassName.packageName, paramBuilderClassName.simpleName)
 }
 
-private class FunAnnotatedAutoDsl(
+private class AutoDslFunctionData(
     val funSpec: FunSpec,
     val packageName: String,
     val name: String

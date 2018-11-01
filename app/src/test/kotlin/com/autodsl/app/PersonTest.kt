@@ -15,14 +15,16 @@
  */
 package com.autodsl.app
 
+import com.autodsl.app.general.Attempts
 import com.autodsl.app.general.scores
+import junit.framework.TestCase.assertEquals
 import org.junit.Test
 
 class PersonTest {
 
     @Test
     fun builderTest() {
-        person {
+        val me = person {
             name = "Juan"
             age = 34
             createAddress {
@@ -33,16 +35,46 @@ class PersonTest {
                     lng = 100f
                 }
             }
-            friends = listOf(
-                person {
-                    name = "Arturo"
-                    age = 30
-                    createAddress {
-                        street = "1600 Latta Dr"
-                        zipCode = 34747
+            friends {
+                for (i in 1..3) {
+                    +person {
+                        name = "Friend_$i"
+                        age = i
+                        createAddress {
+                            street = "$i Street"
+                            zipCode = i
+                        }
                     }
-                })
+                }
+            }
+            keys = setOf("home_key", "work_key")
         }
+        assertEquals(3, me.friends?.size)
+    }
+
+    @Test
+    fun encapsulatedListOfStrings() {
+        val box = box {
+            items {
+                +"Hello"
+                +"World"
+            }
+        }
+        assertEquals(2, box.items.size)
+    }
+
+    @Test
+    fun definedListOfStamps() {
+        val stampArg = "ARG"
+        val box = box {
+            items {
+                +"Hello"
+                +"World"
+            }
+            stamps = listOf(stampArg, "US")
+        }
+        assertEquals(2, box.items.size)
+        assertEquals(stampArg, box.stamps?.first())
     }
 
     @Test
@@ -52,7 +84,21 @@ class PersonTest {
             rating {
                 stars = 5
             }
+            attempts = Attempts(1)
         }
+    }
+
+    @Test
+    fun interopWithJavaClass() {
+        val result = scores {
+            points = 5.0
+            rating {
+                stars = 5
+            }
+            attempts = Attempts(1)
+        }
+
+        assertEquals(1, result.attempts?.counter)
     }
 
     @Test

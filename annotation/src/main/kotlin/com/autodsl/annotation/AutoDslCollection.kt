@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.autodsl.processor
+package com.autodsl.annotation
 
-import javax.lang.model.element.Element
+import kotlin.reflect.KClass
 
-class ProcessingException(
-    val element: Element,
-    msg: String,
-    vararg args: String
-) : Exception(String.format(msg, args))
+/**
+ * Indicates to create a DSL for the annotated Collection property with the specified [mutableType].
+ */
+@Retention(AnnotationRetention.SOURCE)
+@Target(AnnotationTarget.VALUE_PARAMETER)
+annotation class AutoDslCollection(val mutableType: KClass<*>)

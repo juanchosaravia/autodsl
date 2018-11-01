@@ -17,13 +17,14 @@ package com.autodsl.processor
 
 import com.autodsl.annotation.AutoDsl
 import com.google.auto.service.AutoService
-import javax.annotation.processing.*
+import javax.annotation.processing.AbstractProcessor
+import javax.annotation.processing.Processor
+import javax.annotation.processing.RoundEnvironment
+import javax.annotation.processing.SupportedOptions
 import javax.lang.model.SourceVersion
-import javax.lang.model.element.Element
 import javax.lang.model.element.ElementKind
 import javax.lang.model.element.Modifier
 import javax.lang.model.element.TypeElement
-import javax.tools.Diagnostic
 
 
 /**
@@ -33,17 +34,14 @@ import javax.tools.Diagnostic
 @SupportedOptions(AutoDslProcessor.KAPT_KOTLIN_GENERATED_OPTION_NAME)
 class AutoDslProcessor : AbstractProcessor() {
 
-    private var messager: Messager? = null
-
-    override fun init(env: ProcessingEnvironment?) {
-        super.init(env)
-        messager = env?.messager
-    }
-
     override fun process(annotations: MutableSet<out TypeElement>, roundEnv: RoundEnvironment): Boolean {
         roundEnv.getElementsAnnotatedWith(AutoDsl::class.java).forEach { classElement ->
             if (classElement.kind != ElementKind.CLASS) {
-                error(classElement, "Only classes can be annotated with %s.", AutoDsl::class.java.simpleName)
+                processingEnv.error(
+                    classElement,
+                    "Only classes can be annotated with %s.",
+                    AutoDsl::class.java.simpleName
+                )
                 return true
             }
             classElement as TypeElement
@@ -51,7 +49,7 @@ class AutoDslProcessor : AbstractProcessor() {
             val modifiers = classElement.modifiers
             // check class is public and not abstract
             if (!modifiers.contains(Modifier.PUBLIC) || modifiers.contains(Modifier.ABSTRACT)) {
-                error(
+                processingEnv.error(
                     classElement,
                     "The class %s is not public or is abstract.",
                     classElement.qualifiedName.toString()
@@ -62,8 +60,10 @@ class AutoDslProcessor : AbstractProcessor() {
             try {
                 val annotatedClass = AutoDslAnnotatedClass(classElement)
                 annotatedClass.generateClass(processingEnv)
+            } catch (pe: ProcessingException) {
+                processingEnv.error(pe)
             } catch (e: Throwable) {
-                error(classElement, e.message.orEmpty())
+                processingEnv.error(classElement, e.message.orEmpty())
                 return true
             }
         }
@@ -76,10 +76,6 @@ class AutoDslProcessor : AbstractProcessor() {
 
     override fun getSupportedSourceVersion(): SourceVersion {
         return SourceVersion.latestSupported()
-    }
-
-    private fun error(e: Element, msg: String, vararg args: String) {
-        messager?.printMessage(Diagnostic.Kind.ERROR, String.format(msg, args), e)
     }
 
     companion object {
