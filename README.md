@@ -74,8 +74,10 @@ For this example, the processor will detect that "Address" is also marked with "
 so it will provide an extra function to initialize the field directly using the builder, 
 with the custom builder name, if any.
 
-Internally will be generating the builder class and extension function for the annotated class. For required parameters like `name` the build will fail if it is not set indicating exactly which field is missed.
-To make it optional just set a default value like `friends`. This value will be null in case it's not set.
+Internally will be generating the builder class and extension function for the annotated class. 
+
+For required parameters like `name` the DSL will throw an exception indicating exactly which field is missed.
+To make it optional just set the property as nullable with the question mark like `friends` or `keys`. The value will be null in case it's not set.
 
 #### Examples
 - Annotation examples: [Person.kt](app/src/main/kotlin/com/autodsl/app/Person.kt)
@@ -110,6 +112,7 @@ dependencies {
 * Configurable `@DslMarker`
 * Support external builders with new annotation `@ManualDsl(type=MyBuilder::class)`.
 * Custom names for builders to improve usage from Java.
+* Use the default values set in the class definition.
 
 ## Debug
 If you want to debug the processor do the following steps:
