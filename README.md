@@ -1,11 +1,11 @@
 # Auto-DSL for Kotlin
-Auto-generate [DSL (Domain Specific Language)](https://en.wikipedia.org/wiki/Domain-specific_language) for your Kotlin classes using annotations.
+Auto-generates [DSL (Domain Specific Language)](https://en.wikipedia.org/wiki/Domain-specific_language) for your Kotlin classes using annotations.
 
 [![](https://jitpack.io/v/juanchosaravia/autodsl.svg)](https://jitpack.io/#juanchosaravia/autodsl)
 
 No more boilerplate code to create your own DSL. 
 
-Create expressive DSL with your Kotlin classes like this:
+Create expressive DSL like this:
 ```kotlin
 val me = person {
     name = "Juan"
@@ -74,39 +74,12 @@ For this example, the processor will detect that "Address" is also marked with "
 so it will provide an extra function to initialize the field directly using the builder, 
 with the custom builder name, if any.
 
-#### Auto generated builder
-Internally will be generating the builder class and extension function for the annotated class.
-Let's take `People` as example, the code will look like this:
-
-```kotlin
-fun person(block: PersonAutoDslBuilder.() -> Unit): Person = PersonAutoDslBuilder().apply(block).build()
-
-class PersonAutoDslBuilder() {
-    var name: String by Delegates.notNull()
-    var age: Int by Delegates.notNull()
-    var address: Address by Delegates.notNull()
-    
-    var friends: List<Person>? = null
-    var keys: Set<String>? = null
-    
-    // extra function to inline declaration for fields with classes annotated with AutoDsl
-    fun createAddress(block: AddressAutoDslBuilder.() -> Unit): PersonAutoDslBuilder = this.apply { this.address = AddressAutoDslBuilder().apply(block).build() }
-    
-    // function to improve DSL integrating with Collections
-    fun friends(block: FriendsAutoDslCollection.() -> Unit): PersonAutoDslBuilder = this.apply { this.friends = FriendsAutoDslCollection().apply { block() }.collection }
-
-    fun build(): Person = Person(name, age, address, friends, keys)
-    
-    // continue...
-}
-```
-
-For required parameters like `name` the build will fail if it is not set indicating exactly which field is missed.
+Internally will be generating the builder class and extension function for the annotated class. For required parameters like `name` the build will fail if it is not set indicating exactly which field is missed.
 To make it optional just set a default value like `friends`. This value will be null in case it's not set.
 
 #### Examples
-- Declaration: [Person.kt](app/src/main/kotlin/com/autodsl/app/Person.kt)
-- Usage: [PersonTest.kt](app/src/test/kotlin/com/autodsl/app/PersonTest.kt)
+- Annotation examples: [Person.kt](app/src/main/kotlin/com/autodsl/app/Person.kt)
+- DSL Usage: [PersonTest.kt](app/src/test/kotlin/com/autodsl/app/PersonTest.kt)
 
 ## Download
 
@@ -128,14 +101,15 @@ dependencies {
 
 
 ## Limitations
+* Does not support private constructors.
 * There is an [issue](https://github.com/square/kotlinpoet/issues/236) that generates these limitations:
   * Mutable collections are not supported (like MutableList).
   * Support Nullable types inside other types like `List<String?>`
-* Does not support private constructors.
 
 ## Pending Features
 * Configurable `@DslMarker`
 * Support external builders with new annotation `@ManualDsl(type=MyBuilder::class)`.
+* Custom names for builders to improve usage from Java.
 
 ## Debug
 If you want to debug the processor do the following steps:
