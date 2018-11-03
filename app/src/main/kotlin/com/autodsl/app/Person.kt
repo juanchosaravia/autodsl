@@ -39,16 +39,17 @@ data class Address( // can be used in data classes
 
 @AutoDsl
 class Location {
-    val lat: Float
-    val lng: Float
+    val lat: Double
+    val lng: Double
 
     constructor() {
-        lat = 0F
-        lng = 0F
+        lat = 0.0
+        lng = 0.0
     }
 
-    @AutoDslConstructor // specify the desired constructor for the builder
-    constructor(lat: Float, lng: Float) {
+    // in multiple constructors you can specify which one to use.
+    @AutoDslConstructor
+    constructor(lat: Double, lng: Double) {
         this.lat = lat
         this.lng = lng
     }

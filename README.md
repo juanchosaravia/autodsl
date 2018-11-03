@@ -15,8 +15,8 @@ person {
         street = "200 Celebration Bv"
         zipCode = 34747
         location {
-            lat = 100f
-            lng = 100f
+            lat = 100.0
+            lng = 100.0
         }
     }
     friends {
@@ -51,17 +51,17 @@ data class Address(      // can be used in data classes
 
 @AutoDsl
 class Location {
-    val lat: Float
-    val lng: Float
+    val lat: Double
+    val lng: Double
 
     constructor() {
-        lat = 0F
-        lng = 0F
+        lat = 0.0
+        lng = 0.0
     }
 
     // in multiple constructors you can specify which one to use.
     @AutoDslConstructor
-    constructor(lat: Float, lng: Float) {
+    constructor(lat: Double, lng: Double) {
         this.lat = lat
         this.lng = lng
     }
@@ -77,7 +77,10 @@ To make it optional just set the property as nullable with the
 question mark like `friends`. The value will be null in 
 case it's not set.
 
-#### More Examples
+## Documentation
+Visit the Wiki for more details: [AutoDsl-Wiki](https://github.com/juanchosaravia/autodsl/wiki/AutoDsl-Wiki)
+
+For more Examples
 - Annotation examples: [Person.kt](app/src/main/kotlin/com/autodsl/app/Person.kt)
 - DSL examples Usage: [PersonTest.kt](app/src/test/kotlin/com/autodsl/app/PersonTest.kt)
 

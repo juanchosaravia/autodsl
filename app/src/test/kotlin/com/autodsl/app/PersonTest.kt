@@ -31,8 +31,8 @@ class PersonTest {
                 street = "200 Celebration Bv"
                 zipCode = 34747
                 location {
-                    lat = 100f
-                    lng = 100f
+                    lat = 100.0
+                    lng = 100.0
                 }
             }
             friends {
