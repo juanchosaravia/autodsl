@@ -6,7 +6,7 @@ for your Kotlin projects using annotations.
 
 No more boilerplate code to create your own DSL. 
 
-Create an expressive and type-safe DSL like this:
+Create expressive and type-safe DSL like this:
 ```kotlin
 person {
     name = "Juan"
@@ -32,7 +32,7 @@ person {
 }
 ```
 
-To generate the previous DSL, you just need these classes and the AutoDsl annotations:
+To generate the previous DSL you just need these classes and AutoDsl:
 ```kotlin
 @AutoDsl
 class Person(
@@ -74,7 +74,7 @@ the annotated class providing this super expressive DSL.
 For required parameters like `name` the DSL will throw an exception on 
 runtime indicating exactly which field is missed.
 To make it optional just set the property as nullable with the 
-question mark like `friends` or `keys`. The value will be null in 
+question mark like `friends`. The value will be null in 
 case it's not set.
 
 #### More Examples
