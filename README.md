@@ -39,11 +39,11 @@ class Person(
     val age: Int,
     val address: Address?,
     val friends: List<Person>?, // List and Set have default concrete types
-    @AutoDslCollection(concreteType = TreeSet::class) // specify concrete type
+    @AutoDslCollection(concreteType = TreeSet::class) // specify custom concrete type
     val keys: Set<String>?
 )
 
-@AutoDsl("createAddress") // can specify custom name for dsl
+@AutoDsl("createAddress") // set custom name for DSL
 data class Address( // can be used in data classes
     val street: String,
     val zipCode: Int,
@@ -69,7 +69,7 @@ class Location {
 }
 ```
 
-For this example, the processor will detect that "Address" is also marked with "@AutoDsl" 
+For this example, the processor will detect that `Address` is also marked with `@AutoDsl` 
 so it will provide an extra function to initialize the field directly using the builder, 
 with the custom builder name, if any.
 
@@ -86,14 +86,13 @@ To make it optional just set the property as nullable with the question mark lik
 
 Add repository:
 ```groovy
-allprojects {
-    repositories {
-        maven { url "https://dl.bintray.com/juanchosaravia/autodsl" }
-        maven { url "https://kotlin.bintray.com/kotlinx/" }
-    }
+repositories {
+    maven { url "https://dl.bintray.com/juanchosaravia/autodsl" }
+    maven { url "https://kotlin.bintray.com/kotlinx/" }
 }
 ```
-*Note: kotlinx is only available from bintray so we are forced to add this repo for now.* 
+*Note: kotlinx is only available from bintray so we are forced to 
+add this repo for now and is going to be used just for the processor.* 
 
 ##### Add the dependencies
 ```groovy
@@ -106,14 +105,14 @@ dependencies {
 ## Limitations
 * Does not support private constructors.
 * There is an [issue](https://github.com/square/kotlinpoet/issues/236) that generates these limitations:
-  * Mutable collections are not supported (like MutableList).
+  * Mutable collections are not supported as type in the constructor parameter (like MutableList). 
+  Still you can use concrete types or non-mutable interfaces like List, Set, etc. See examples for more options.
   * Support Nullable types inside other types like `List<String?>`
 
 ## Pending Features
-* Configurable `@DslMarker`
-* Support external builders with new annotation `@ManualDsl(type=MyBuilder::class)`.
-* Custom names for builders to improve usage from Java.
 * Use the default values set in the class definition.
+* Support external builders with new annotation `@ManualDsl(type=MyBuilder::class)`.
+* Custom names for builders to improve integration with Java.
 
 ## Debug
 If you want to debug the processor do the following steps:
