@@ -76,7 +76,7 @@ bintray {
     key = properties.getProperty("bintray.apikey")
 
     publish = true
-    override = true
+    override = false
     publications = ['mavenPublication']
 
     pkg {

@@ -83,7 +83,7 @@ case it's not set.
 
 ## Download
 
-Add repository:
+##### Add repository:
 ```groovy
 repositories {
     maven { url "https://dl.bintray.com/juanchosaravia/autodsl" }
@@ -103,10 +103,10 @@ dependencies {
 
 ## Limitations
 * Does not support private constructors.
-* There is an [issue](https://github.com/square/kotlinpoet/issues/236) that generates these limitations:
-  * Mutable collections are not supported as type in the constructor parameter (like MutableList). 
-  Still you can use concrete types or non-mutable interfaces like List, Set, etc. See examples for more options.
-  * Support Nullable types inside other types like `List<String?>`
+* This [issue](https://github.com/square/kotlinpoet/issues/236) generates these limitations:
+  * Mutable collections are not supported as type in the constructor parameter (like MutableList or MutableCollection). 
+  Still you can use concrete types (ArrayList, HashSet) or non-mutable interfaces like List, Set, etc. See examples for more options.
+  * Does not support Nullable types inside other types like `List<String?>`
 
 ## Pending Features
 * Use the default values set in the class definition.
