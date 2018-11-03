@@ -36,20 +36,18 @@ class PersonTest {
                 }
             }
             friends {
-                for (i in 1..3) {
-                    +person {
-                        name = "Friend_$i"
-                        age = i
-                        createAddress {
-                            street = "$i Street"
-                            zipCode = i
-                        }
-                    }
+                +person {
+                    name = "Arturo"
+                    age = 30
+                }
+                +person {
+                    name = "Tiwa"
+                    age = 31
                 }
             }
             keys = setOf("home_key", "work_key")
         }
-        assertEquals(3, me.friends?.size)
+        assertEquals(2, me.friends?.size)
     }
 
     @Test

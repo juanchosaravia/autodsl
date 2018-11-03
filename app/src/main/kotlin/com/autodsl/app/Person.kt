@@ -18,14 +18,15 @@ package com.autodsl.app
 import com.autodsl.annotation.AutoDsl
 import com.autodsl.annotation.AutoDslCollection
 import com.autodsl.annotation.AutoDslConstructor
+import java.util.*
 
 @AutoDsl // indicates to create an associated Builder for this class
 class Person(
     val name: String,
     val age: Int,
-    val address: Address,
-    @AutoDslCollection(concreteType = ArrayList::class) // generates better DSL integration with Collections
+    val address: Address?,
     val friends: List<Person>?,
+    @AutoDslCollection(concreteType = TreeSet::class) // specify concrete type
     val keys: Set<String>?
 )
 
@@ -55,14 +56,11 @@ class Location {
 
 @AutoDsl
 internal class Box( // supports internal classes
-    @AutoDslCollection(concreteType = HashSet::class)
     val items: Set<String>,
-    @AutoDslCollection(concreteType = ArrayList::class) // todo use defaults for List
     val stamps: List<Stamp>?
 )
 
 @AutoDsl
 internal class Stamp(
-    @AutoDslCollection(concreteType = ArrayList::class)
     val colors: List<String>
 )

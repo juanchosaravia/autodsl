@@ -7,7 +7,7 @@ No more boilerplate code to create your own DSL.
 
 Create expressive DSL like this:
 ```kotlin
-val me = person {
+person {
     name = "Juan"
     age = 34
     createAddress {
@@ -19,15 +19,13 @@ val me = person {
         }
     }
     friends {
-        for (i in 1..3) {
-            +person {
-                name = "Friend_$i"
-                age = i
-                createAddress {
-                    street = "$i Street"
-                    zipCode = i
-                }
-            }
+        +person {
+            name = "Arturo"
+            age = 30
+        }
+        +person {
+            name = "Tiwa"
+            age = 30
         }
     }
 }
@@ -39,13 +37,13 @@ To generate the previous DSL, you just need these classes and the AutoDsl annota
 class Person(
     val name: String,
     val age: Int,
-    val address: Address,
-    @AutoDslCollection(mutableType = ArrayList::class) // optional: generates better DSL integration with Collections
-    val friends: List<Person>?,
+    val address: Address?,
+    val friends: List<Person>?, // List and Set have default concrete types
+    @AutoDslCollection(concreteType = TreeSet::class) // specify concrete type
     val keys: Set<String>?
 )
 
-@AutoDsl("createAddress") // can specify custom name for dsl creation
+@AutoDsl("createAddress") // can specify custom name for dsl
 data class Address( // can be used in data classes
     val street: String,
     val zipCode: Int,
@@ -62,7 +60,8 @@ class Location {
         lng = 0F
     }
 
-    @AutoDslConstructor // specify the desired constructor for the builder
+    // specify the desired constructor in multiple constructors
+    @AutoDslConstructor
     constructor(lat: Float, lng: Float) {
         this.lat = lat
         this.lng = lng
@@ -74,9 +73,9 @@ For this example, the processor will detect that "Address" is also marked with "
 so it will provide an extra function to initialize the field directly using the builder, 
 with the custom builder name, if any.
 
-Internally will be generating the builder class and extension function for the annotated class. 
+Internally will be generating a builder class and extension function for the annotated class. 
 
-For required parameters like `name` the DSL will throw an exception indicating exactly which field is missed.
+For required parameters like `name` the DSL will throw an exception on runtime indicating exactly which field is missed.
 To make it optional just set the property as nullable with the question mark like `friends` or `keys`. The value will be null in case it's not set.
 
 #### Examples
@@ -94,7 +93,7 @@ allprojects {
     }
 }
 ```
-*Note: kotlinx is only available from bintray so we are forced to add this repo.* 
+*Note: kotlinx is only available from bintray so we are forced to add this repo for now.* 
 
 ##### Add the dependencies
 ```groovy

@@ -63,7 +63,7 @@ fun AutoDslAnnotatedClass.generateClass(processingEnv: ProcessingEnvironment) {
         val paramTypeElement = param.asType().asElement()
 
         // check param has an associated auto-generated builder and create DSL function
-        createFunIfAnnotatedAutoDsl(
+        createFunIfAnnotatedWithAutoDsl(
             paramTypeElement,
             paramSimpleName,
             classBuilderClassName,
@@ -74,9 +74,17 @@ fun AutoDslAnnotatedClass.generateClass(processingEnv: ProcessingEnvironment) {
         }
 
         try {
-            createFunIfAnnotatedWithCollection(param, paramSimpleName, classBuilderClassName)?.let {
-                classBuilder.addType(it.nestedClass)
-                classBuilder.addFunction(it.collectionFun)
+            val autoDslCollectionData =
+                createFunIfAnnotatedWithCollection(param, paramSimpleName, classBuilderClassName)
+            if (autoDslCollectionData != null) {
+                classBuilder.addType(autoDslCollectionData.nestedClass)
+                classBuilder.addFunction(autoDslCollectionData.collectionFun)
+            } else {
+                // if not annotated then try to check for default supported collections
+                createFunIfSupportedCollectionAndNoAnnotation(param, paramSimpleName, classBuilderClassName)?.let {
+                    classBuilder.addType(it.nestedClass)
+                    classBuilder.addFunction(it.collectionFun)
+                }
             }
         } catch (e: ProcessingException) {
             processingEnv.error(e)
@@ -159,19 +167,32 @@ private fun createPropertySpec(
     return propBuilder
 }
 
+private fun createFunIfSupportedCollectionAndNoAnnotation(
+    param: Symbol.VarSymbol,
+    paramSimpleName: String,
+    classBuilderClassName: ClassName
+): AutoDslCollectionData? {
+    val concreteClassName =
+        when ((param.asTypeName().javaToKotlinType() as? ParameterizedTypeName)?.rawType?.canonicalName) {
+            Constants.LIST_TYPE_NAME -> ArrayList::class.asClassName()
+            Constants.SET_TYPE_NAME -> HashSet::class.asClassName()
+            else -> {
+                return null
+            }
+        }
+    return createCollectionData(param, paramSimpleName, classBuilderClassName, concreteClassName)
+}
+
 private fun createFunIfAnnotatedWithCollection(
     param: Symbol.VarSymbol,
     paramSimpleName: String,
     classBuilderClassName: ClassName
 ): AutoDslCollectionData? {
-    val collectionAnnotation = param.getAnnotation(AutoDslCollection::class.java) ?: return null
-    val parameterizedClassName =
-        ((param.asType().asTypeName() as? ParameterizedTypeName)?.typeArguments?.get(0)?.javaToKotlinType() as? ClassName)
-            ?: throw ProcessingException(param, "Annotated field has no parameterized value")
+    val collectionAnnotation = param.getAnnotation(AutoDslCollection::class.java)
+        ?: return null
 
-    var collectionAnnotationClassName: ClassName
-    try {
-        collectionAnnotationClassName = collectionAnnotation.concreteType.asTypeName().javaToKotlinType() as ClassName
+    val collectionAnnotationClassName: ClassName = try {
+        collectionAnnotation.concreteType.asTypeName().javaToKotlinType() as ClassName
     } catch (e: MirroredTypeException) {
         if (e.typeMirror !is DeclaredType) {
             throw ProcessingException(
@@ -179,9 +200,21 @@ private fun createFunIfAnnotatedWithCollection(
                 "The given type is not supported by AutoDslCollection. Make sure the selected class is a DeclaredType."
             )
         }
-        collectionAnnotationClassName = (e.typeMirror as DeclaredType).asTypeName().javaToKotlinType() as ClassName
+        (e.typeMirror as DeclaredType).asTypeName().javaToKotlinType() as ClassName
     }
 
+    return createCollectionData(param, paramSimpleName, classBuilderClassName, collectionAnnotationClassName)
+}
+
+private fun createCollectionData(
+    param: Symbol.VarSymbol,
+    paramSimpleName: String,
+    classBuilderClassName: ClassName,
+    concreteCollectionClassName: ClassName
+): AutoDslCollectionData {
+    val parameterizedClassName =
+        ((param.asType().asTypeName() as? ParameterizedTypeName)?.typeArguments?.get(0)?.javaToKotlinType() as? ClassName)
+            ?: throw ProcessingException(param, "Collection has no parameterized value")
     /*
     Review: This could be improved if we detect there is no repeated parameterized type so we can create a list
     directly in the builder and leverage the use of a class only if it's repeated so we can avoid issues with
@@ -201,10 +234,10 @@ private fun createFunIfAnnotatedWithCollection(
         .addProperty(
             PropertySpec.builder(
                 collectionFieldName,
-                collectionAnnotationClassName.plusParameter(parameterizedClassName),
+                concreteCollectionClassName.plusParameter(parameterizedClassName),
                 KModifier.INTERNAL
             )
-                .initializer("%T()", collectionAnnotationClassName)
+                .initializer("%T()", concreteCollectionClassName)
                 .build()
         )
         .addFunction(
@@ -238,7 +271,7 @@ private class AutoDslCollectionData(
     val nestedClass: TypeSpec
 )
 
-private fun createFunIfAnnotatedAutoDsl(
+private fun createFunIfAnnotatedWithAutoDsl(
     paramTypeElement: Symbol.TypeSymbol,
     paramSimpleName: String,
     classBuilderClassName: ClassName,
