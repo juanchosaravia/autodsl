@@ -24,7 +24,7 @@ class Person(
     val name: String,
     val age: Int,
     val address: Address,
-    @AutoDslCollection(mutableType = ArrayList::class) // generates better DSL integration with Collections
+    @AutoDslCollection(concreteType = ArrayList::class) // generates better DSL integration with Collections
     val friends: List<Person>?,
     val keys: Set<String>?
 )
@@ -55,7 +55,14 @@ class Location {
 
 @AutoDsl
 internal class Box( // supports internal classes
-    @AutoDslCollection(mutableType = HashSet::class)
+    @AutoDslCollection(concreteType = HashSet::class)
     val items: Set<String>,
-    val stamps: List<String>?
+    @AutoDslCollection(concreteType = ArrayList::class) // todo use defaults for List
+    val stamps: List<Stamp>?
+)
+
+@AutoDsl
+internal class Stamp(
+    @AutoDslCollection(concreteType = ArrayList::class)
+    val colors: List<String>
 )

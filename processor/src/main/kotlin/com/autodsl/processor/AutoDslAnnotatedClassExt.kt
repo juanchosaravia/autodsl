@@ -17,6 +17,7 @@ package com.autodsl.processor
 
 import com.autodsl.annotation.AutoDsl
 import com.autodsl.annotation.AutoDslCollection
+import com.autodsl.annotation.AutoDslMarker
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.plusParameter
 import com.sun.tools.javac.code.Symbol
@@ -48,6 +49,7 @@ fun AutoDslAnnotatedClass.generateClass(processingEnv: ProcessingEnvironment) {
     // create builder class
     val classBuilder = TypeSpec.classBuilder(builderClassName)
         .primaryConstructor(FunSpec.constructorBuilder().build())
+        .addAnnotation(AutoDslMarker::class)
 
     if (this.isClassInternalModifier) {
         classBuilder.addModifiers(KModifier.INTERNAL)
@@ -169,7 +171,7 @@ private fun createFunIfAnnotatedWithCollection(
 
     var collectionAnnotationClassName: ClassName
     try {
-        collectionAnnotationClassName = collectionAnnotation.mutableType.asTypeName().javaToKotlinType() as ClassName
+        collectionAnnotationClassName = collectionAnnotation.concreteType.asTypeName().javaToKotlinType() as ClassName
     } catch (e: MirroredTypeException) {
         if (e.typeMirror !is DeclaredType) {
             throw ProcessingException(
@@ -195,6 +197,7 @@ private fun createFunIfAnnotatedWithCollection(
     val collectionClassNameValue = paramSimpleName.toAutoDslCollectionClassName()
     val nestedClass = TypeSpec.classBuilder(collectionClassNameValue)
         .primaryConstructor(FunSpec.constructorBuilder().addModifiers(KModifier.INTERNAL).build())
+        .addAnnotation(AutoDslMarker::class)
         .addProperty(
             PropertySpec.builder(
                 collectionFieldName,

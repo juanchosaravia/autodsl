@@ -23,7 +23,7 @@ import org.junit.Test
 class PersonTest {
 
     @Test
-    fun builderTest() {
+    fun builderPersonTest() {
         val me = person {
             name = "Juan"
             age = 34
@@ -65,16 +65,23 @@ class PersonTest {
 
     @Test
     fun definedListOfStamps() {
-        val stampArg = "ARG"
+        val stampRedColor = "Red"
         val box = box {
             items {
                 +"Hello"
                 +"World"
             }
-            stamps = listOf(stampArg, "US")
+            stamps {
+                +stamp {
+                    colors {
+                        +"Red"
+                        +"Yellow"
+                    }
+                }
+            }
         }
         assertEquals(2, box.items.size)
-        assertEquals(stampArg, box.stamps?.first())
+        assertEquals(stampRedColor, box.stamps?.first()?.colors?.first())
     }
 
     @Test

@@ -104,7 +104,6 @@ dependencies {
 }
 ```
 
-
 ## Limitations
 * Does not support private constructors.
 * There is an [issue](https://github.com/square/kotlinpoet/issues/236) that generates these limitations:

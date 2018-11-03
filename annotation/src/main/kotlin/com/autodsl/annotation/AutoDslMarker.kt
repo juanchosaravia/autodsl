@@ -15,11 +15,5 @@
  */
 package com.autodsl.annotation
 
-import kotlin.reflect.KClass
-
-/**
- * Indicates to create a DSL for the annotated Collection property with the specified [concreteType].
- */
-@Retention(AnnotationRetention.SOURCE)
-@Target(AnnotationTarget.VALUE_PARAMETER)
-annotation class AutoDslCollection(val concreteType: KClass<*>)
+@DslMarker
+annotation class AutoDslMarker
