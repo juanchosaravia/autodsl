@@ -1,11 +1,12 @@
 # Auto-DSL for Kotlin
-Auto-generates [DSL (Domain Specific Language)](https://en.wikipedia.org/wiki/Domain-specific_language) for your Kotlin classes using annotations.
+Auto-generates [DSL (Domain Specific Language)](https://en.wikipedia.org/wiki/Domain-specific_language) 
+for your Kotlin projects using annotations.
 
 [ ![Download](https://api.bintray.com/packages/juanchosaravia/autodsl/com.juanchosaravia.autodsl%3Aprocessor/images/download.svg) ](https://bintray.com/juanchosaravia/autodsl/com.juanchosaravia.autodsl%3Aprocessor/_latestVersion)
 
 No more boilerplate code to create your own DSL. 
 
-Create expressive DSL like this:
+Create an expressive and type-safe DSL like this:
 ```kotlin
 person {
     name = "Juan"
@@ -38,16 +39,14 @@ class Person(
     val name: String,
     val age: Int,
     val address: Address?,
-    val friends: List<Person>?, // List and Set have default concrete types
-    @AutoDslCollection(concreteType = TreeSet::class) // specify custom concrete type
-    val keys: Set<String>?
+    val friends: List<Person>?
 )
 
 @AutoDsl("createAddress") // set custom name for DSL
-data class Address( // can be used in data classes
+data class Address(      // can be used in data classes
     val street: String,
     val zipCode: Int,
-    internal val location: Location? // supports internal fields
+    internal val location: Location?
 )
 
 @AutoDsl
@@ -60,7 +59,7 @@ class Location {
         lng = 0F
     }
 
-    // specify the desired constructor in multiple constructors
+    // in multiple constructors you can specify which one to use.
     @AutoDslConstructor
     constructor(lat: Float, lng: Float) {
         this.lat = lat
@@ -69,18 +68,18 @@ class Location {
 }
 ```
 
-For this example, the processor will detect that `Address` is also marked with `@AutoDsl` 
-so it will provide an extra function to initialize the field directly using the builder, 
-with the custom builder name, if any.
+AutoDsl will be generating a builder class and extension function for 
+the annotated class providing this super expressive DSL. 
 
-Internally will be generating a builder class and extension function for the annotated class. 
+For required parameters like `name` the DSL will throw an exception on 
+runtime indicating exactly which field is missed.
+To make it optional just set the property as nullable with the 
+question mark like `friends` or `keys`. The value will be null in 
+case it's not set.
 
-For required parameters like `name` the DSL will throw an exception on runtime indicating exactly which field is missed.
-To make it optional just set the property as nullable with the question mark like `friends` or `keys`. The value will be null in case it's not set.
-
-#### Examples
+#### More Examples
 - Annotation examples: [Person.kt](app/src/main/kotlin/com/autodsl/app/Person.kt)
-- DSL Usage: [PersonTest.kt](app/src/test/kotlin/com/autodsl/app/PersonTest.kt)
+- DSL examples Usage: [PersonTest.kt](app/src/test/kotlin/com/autodsl/app/PersonTest.kt)
 
 ## Download
 
