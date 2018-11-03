@@ -1,7 +1,7 @@
 # Auto-DSL for Kotlin
 Auto-generates [DSL (Domain Specific Language)](https://en.wikipedia.org/wiki/Domain-specific_language) for your Kotlin classes using annotations.
 
-[![](https://jitpack.io/v/juanchosaravia/autodsl.svg)](https://jitpack.io/#juanchosaravia/autodsl)
+[ ![Download](https://api.bintray.com/packages/juanchosaravia/autodsl/com.juanchosaravia.autodsl%3Aprocessor/images/download.svg) ](https://bintray.com/juanchosaravia/autodsl/com.juanchosaravia.autodsl%3Aprocessor/_latestVersion)
 
 No more boilerplate code to create your own DSL. 
 
@@ -89,15 +89,18 @@ Add repository:
 ```groovy
 allprojects {
     repositories {
-        maven { url 'https://jitpack.io' }
+        maven { url "https://dl.bintray.com/juanchosaravia/autodsl" }
+        maven { url "https://kotlin.bintray.com/kotlinx/" }
     }
 }
 ```
-Add the dependencies
+*Note: kotlinx is only available from bintray so we are forced to add this repo.* 
+
+##### Add the dependencies
 ```groovy
 dependencies {
-    implementation 'com.github.juanchosaravia.autodsl:annotation:latest_version'
-    kapt 'com.github.juanchosaravia.autodsl:processor:latest_version'
+    api "com.juanchosaravia.autodsl:annotation:latest_version"
+    kapt "com.juanchosaravia.autodsl:processor:latest_version"
 }
 ```
 

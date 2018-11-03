@@ -2,12 +2,12 @@ buildscript {
     repositories {
         jcenter()
         mavenCentral()
-        mavenLocal()
     }
 }
 plugins {
     id 'org.jetbrains.kotlin.jvm' version "1.3.0"
     id "org.jetbrains.kotlin.kapt" version "1.3.0"
+    id "com.jfrog.bintray" version "1.8.4"
 }
 allprojects {
     apply plugin: 'org.jetbrains.kotlin.jvm'
@@ -26,8 +26,4 @@ allprojects {
     compileTestKotlin {
         kotlinOptions.jvmTarget = "1.8"
     }
-}
-subprojects {
-    version '1.0.0-SNAPSHOT'
-    group 'com.autodsl'
 }

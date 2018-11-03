@@ -1,21 +1,2 @@
-plugins {
-    id 'maven-publish'
-}
-
-task sourcesJar(type: Jar) {
-    classifier 'sources'
-    from sourceSets.main.allSource
-}
-
-artifacts {
-    archives sourcesJar
-}
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-            artifact sourcesJar
-        }
-    }
-}
+// leave this at the end
+apply from: rootProject.file('release-bintray.gradle')

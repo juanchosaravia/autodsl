@@ -1,0 +1,28 @@
+ext {
+    libraryVersion = '0.0.5'
+
+    def groupName = "com.juanchosaravia.autodsl"
+    bintrayRepo = 'autodsl'
+    bintrayName = "$groupName:$POM_ARTIFACT_ID"
+
+    publishedGroupId = groupName
+    libraryName = POM_NAME
+    artifact = POM_ARTIFACT_ID
+
+    libraryDescription = 'Auto-generates DSL for your Kotlin classes using annotations.'
+
+    siteUrl = 'https://github.com/juanchosaravia/autodsl'
+    gitUrl = 'https://github.com/juanchosaravia/autodsl.git'
+
+    developerId = 'juanchosaravia'
+    developerName = 'Juan Ignacio Saravia'
+    developerEmail = 'juanchosaravia@gmail.com'
+
+    licenseName = "The Apache Software License, Version 2.0"
+    licenseUrl = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+    licenseDist = "repo"
+    allLicenses = ['Apache-2.0']
+}
+
+// Publish on Bintray.
+apply from: rootProject.file('bintray/bintray.gradle')

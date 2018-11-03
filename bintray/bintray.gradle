@@ -1,0 +1,96 @@
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'maven-publish'
+
+version = libraryVersion
+group = publishedGroupId
+
+task sourcesJar(type: Jar) {
+    classifier 'sources'
+    from sourceSets.main.allSource
+}
+
+javadoc.failOnError = false
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+
+def pomConfig = {
+    licenses {
+        license {
+            name licenseName
+            url licenseUrl
+            distribution licenseDist
+        }
+    }
+    developers {
+        developer {
+            id developerId
+            name developerName
+            email developerEmail
+        }
+    }
+    scm {
+        connection gitUrl
+        developerConnection gitUrl
+        url siteUrl
+    }
+}
+
+publishing {
+    publications {
+        mavenPublication(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+            pom.withXml {
+                def root = asNode()
+                root.appendNode('description', libraryDescription)
+                root.appendNode('name', libraryName)
+                root.appendNode('url', siteUrl)
+                root.children().last() + pomConfig
+            }
+        }
+    }
+}
+
+bintrayUpload.dependsOn assemble
+bintrayUpload.dependsOn sourcesJar
+bintrayUpload.dependsOn javadocJar
+
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+bintray {
+    user = properties.getProperty("bintray.user")
+    key = properties.getProperty("bintray.apikey")
+
+    publish = true
+    override = true
+    publications = ['mavenPublication']
+
+    pkg {
+        repo = bintrayRepo
+        name = bintrayName
+        desc = libraryDescription
+
+        websiteUrl = siteUrl
+        vcsUrl = gitUrl
+        licenses = allLicenses
+        publicDownloadNumbers = true
+        version {
+            desc = libraryDescription
+            released = new Date()
+        }
+    }
+}
