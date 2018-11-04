@@ -16,6 +16,8 @@
 package com.autodsl.processor
 
 import com.autodsl.annotation.AutoDsl
+import com.autodsl.processor.model.AutoDslClass
+import com.autodsl.processor.model.generateClass
 import com.google.auto.service.AutoService
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.Processor
@@ -58,12 +60,14 @@ class AutoDslProcessor : AbstractProcessor() {
             }
 
             try {
-                val annotatedClass = AutoDslAnnotatedClass(classElement)
-                annotatedClass.generateClass(processingEnv)
+                processingEnv.generateClass(AutoDslClass(classElement))
             } catch (pe: ProcessingException) {
                 processingEnv.error(pe)
             } catch (e: Throwable) {
-                processingEnv.error(classElement, e.message.orEmpty())
+                processingEnv.error(
+                    classElement,
+                    "There was an error while processing your annotated classes. error = ${e.message.orEmpty()}"
+                )
                 return true
             }
         }

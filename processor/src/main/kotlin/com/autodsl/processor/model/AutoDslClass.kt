@@ -13,20 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.autodsl.processor
+package com.autodsl.processor.model
 
 import com.autodsl.annotation.AutoDslConstructor
+import com.autodsl.processor.ProcessingException
+import com.autodsl.processor.isClassInternal
+import com.autodsl.processor.toAutoDslBuilderName
 import com.sun.tools.javac.code.Symbol
 import javax.lang.model.element.Element
 import javax.lang.model.element.ElementKind
 import javax.lang.model.element.Modifier
 import javax.lang.model.element.TypeElement
 
-class AutoDslAnnotatedClass(val classElement: TypeElement) {
+class AutoDslClass(val classElement: TypeElement) {
 
     private val constructor: Element
     val builderClassName = classElement.simpleName.toString().toAutoDslBuilderName()
     val isClassInternalModifier: Boolean
+
+    val parameters: List<AutoDslParam>
 
     init {
         val publicConstructors: List<Element> = classElement.enclosedElements.filter {
@@ -37,14 +42,18 @@ class AutoDslAnnotatedClass(val classElement: TypeElement) {
         }
         if (mainConstructor == null) {
             if (publicConstructors.isEmpty()) {
-                throw ProcessingException(classElement, "There is no constructor that match required criteria.")
+                throw ProcessingException(
+                    classElement,
+                    "There is no constructor that match required criteria."
+                )
             }
             mainConstructor = publicConstructors.first()
         }
         constructor = mainConstructor
         isClassInternalModifier = classElement.isClassInternal()
+
+        parameters = getParams().map(::AutoDslParam)
     }
 
-    fun formatToBuilderName(classSimpleName: String) = "${classSimpleName}Builder"
-    fun getParams(): List<Symbol.VarSymbol> = (constructor as Symbol.MethodSymbol).params
+    private fun getParams(): List<Symbol.VarSymbol> = (constructor as Symbol.MethodSymbol).params
 }

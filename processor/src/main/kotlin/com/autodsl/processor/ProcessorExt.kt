@@ -30,13 +30,18 @@ import kotlinx.metadata.KmClassVisitor
 import kotlinx.metadata.jvm.KotlinClassHeader
 import kotlinx.metadata.jvm.KotlinClassMetadata
 import org.jetbrains.annotations.Nullable
-import java.lang.IllegalStateException
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.lang.model.element.TypeElement
 import javax.tools.Diagnostic
 import kotlin.reflect.jvm.internal.impl.builtins.jvm.JavaToKotlinClassMap
 import kotlin.reflect.jvm.internal.impl.name.FqName
+
+const val BLOCK_FUN_NAME = "block"
+
+fun ProcessingEnvironment.getClassName(element: Element, className: String): ClassName {
+    return ClassName(elementUtils.getPackageOf(element).toString(), className)
+}
 
 fun ProcessingEnvironment.error(e: ProcessingException) {
     this.error(e.element, e.message ?: "There was an error processing this element.")
@@ -51,7 +56,7 @@ fun ProcessingEnvironment.getGeneratedSourcesRoot(): String {
         ?: throw IllegalStateException("No source root for generated file")
 }
 
-fun Element.asTypeName(): TypeName {
+fun Element.asKotlinTypeName(): TypeName {
     val annotation = this.getAnnotation(Nullable::class.java)
     val typeName = this.javaToKotlinType()
     return if (annotation != null) typeName.asNullable() else typeName
