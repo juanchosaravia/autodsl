@@ -21,9 +21,7 @@ import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.asTypeName
-import com.sun.tools.javac.code.Attribute
 import com.sun.tools.javac.code.Symbol
-import com.sun.tools.javac.code.SymbolMetadata
 import kotlinx.metadata.Flag
 import kotlinx.metadata.Flags
 import kotlinx.metadata.KmClassVisitor
@@ -97,7 +95,7 @@ fun TypeElement.isClassInternal(): Boolean {
     if (this !is Symbol.ClassSymbol) return false
 
     var isInternal = false
-    val metadata = this.metadata.asKotlinMetadata()
+    val metadata = getKotlinMetadata()
     if (metadata is KotlinClassMetadata.Class) {
         metadata.accept(object : KmClassVisitor() {
             override fun visit(flags: Flags, name: kotlinx.metadata.ClassName) {
@@ -111,31 +109,18 @@ fun TypeElement.isClassInternal(): Boolean {
     return isInternal
 }
 
-fun SymbolMetadata.asKotlinMetadata(): KotlinClassMetadata? {
-    val metadataAttributes = this.declarationAttributes.firstOrNull {
-        it.type.asTypeName() is ClassName
-                && (it.type.asTypeName() as ClassName).canonicalName == "kotlin.Metadata"
-    }
-    val metadataClassValues = metadataAttributes?.values ?: return null
-    var kind: Int? = null
-    var metadataVersion: IntArray? = null
-    var bytecodeVersion: IntArray? = null
-    var data1: Array<String>? = null
-    var data2: Array<String>? = null
-
-    metadataClassValues.forEach { value ->
-        when (value.fst.name.toString()) {
-            "mv" -> metadataVersion =
-                    (value.snd.value as List<Attribute.Constant>).map { it.value.toString().toInt() }.toIntArray()
-            "bv" -> bytecodeVersion =
-                    (value.snd.value as List<Attribute.Constant>).map { it.value.toString().toInt() }.toIntArray()
-            "k" -> kind = value.snd.value.toString().toInt()
-            "d1" -> data1 = (value.snd.value as List<Attribute.Constant>).map { it.value.toString() }.toTypedArray()
-            "d2" -> data2 = (value.snd.value as List<Attribute.Constant>).map { it.value.toString() }.toTypedArray()
-        }
-    }
-
-    val header = KotlinClassHeader(kind, metadataVersion, bytecodeVersion, data1, data2, null, null, null)
+fun TypeElement.getKotlinMetadata(): KotlinClassMetadata? {
+    val kotlinMetadata = this.getAnnotation(kotlin.Metadata::class.java) ?: return null
+    val header = KotlinClassHeader(
+        kotlinMetadata.kind,
+        kotlinMetadata.metadataVersion,
+        kotlinMetadata.bytecodeVersion,
+        kotlinMetadata.data1,
+        kotlinMetadata.data2,
+        kotlinMetadata.extraString,
+        kotlinMetadata.packageName,
+        kotlinMetadata.extraInt
+    )
     return KotlinClassMetadata.read(header)
 }
 
