@@ -115,6 +115,23 @@ If you want to debug the processor do the following steps:
 Add a new "Remote". Set a Name and check the "Single instance only" flag to true.
 3. Press "Debug" button to run the newly created "Remote" configuration.
 
+## Publish
+* Update version in release-brintray.gradle file:
+```text 
+libraryVersion = 'x.y.z'
+```
+* Setup bintray user and pass in local.properties:
+```text
+bintray.user=username
+bintray.apikey=apikey
+```
+* Run:
+```
+./gradlew :annotation:bintrayUpload
+./gradlew :processor:bintrayUpload
+```
+
+
 ## License
         
     Copyright 2018 Juan Ignacio Saravia
