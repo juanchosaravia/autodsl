@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.autodsl.processor.model
+package com.autodsl.processor.internal
 
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
 
-class AutoDslParamSpec(
+internal class AutoDslParamSpec(
     val imports: List<AutoDslImportSpec>,
     val properties: List<PropertySpec>,
     val functions: List<FunSpec>,

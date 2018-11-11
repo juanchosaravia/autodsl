@@ -17,7 +17,7 @@ package com.autodsl.processor
 
 import javax.lang.model.element.Element
 
-class ProcessingException(
+internal class ProcessingException(
     val element: Element,
     msg: String,
     vararg args: String

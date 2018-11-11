@@ -13,24 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.autodsl.processor.model
+package com.autodsl.processor.internal
 
 import com.autodsl.annotation.AutoDsl
 import com.autodsl.annotation.AutoDslCollection
-import com.autodsl.processor.asKotlinTypeName
-import com.squareup.kotlinpoet.asTypeName
+import com.autodsl.processor.asTypeName
 import com.sun.tools.javac.code.Symbol
-import org.jetbrains.annotations.Nullable
+import me.eugeniomarletti.kotlin.metadata.shadow.metadata.ProtoBuf
+import me.eugeniomarletti.kotlin.metadata.shadow.metadata.deserialization.NameResolver
 
-class AutoDslParam(
-    val element: Symbol.VarSymbol
+internal class AutoDslParam(
+    val name: String,
+    param: TargetParameter,
+    protoClass: ProtoBuf.Class,
+    nameResolver: NameResolver
 ) {
-    val name = element.simpleName.toString()
-    val type = AutoDslParamType(element)
-    val jvmTypeName = element.asType().asTypeName()
-    val kotlinTypeName = element.asKotlinTypeName()
+    val element = param.element
+    val typeInfo = AutoDslParamType(element as Symbol.VarSymbol)
+    val typeName = param.proto.type.asTypeName(nameResolver, protoClass::getTypeParameter)
 
-    fun isNullable() = element.getAnnotation(Nullable::class.java) != null
+    fun isNullable() = typeName.nullable
     fun getAutoDslCollectionAnnotation(): AutoDslCollection? = element.getAnnotation(AutoDslCollection::class.java)
 }
 

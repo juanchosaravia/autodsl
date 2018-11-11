@@ -13,22 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.autodsl.processor.model
+package com.autodsl.processor.internal
 
 import com.autodsl.annotation.AutoDsl
 import com.autodsl.annotation.AutoDslMarker
 import com.autodsl.processor.*
 import com.squareup.kotlinpoet.*
+import me.eugeniomarletti.kotlin.metadata.KotlinClassMetadata
+import me.eugeniomarletti.kotlin.metadata.kotlinMetadata
 import java.io.File
 import javax.annotation.processing.ProcessingEnvironment
 
 /**
- * Generates code for [AutoDslClass].
+ * Generates code for AutoDsl.
  */
-fun ProcessingEnvironment.generateClass(autoDslClass: AutoDslClass) {
-    val classElement = autoDslClass.classElement
+internal fun ProcessingEnvironment.generateClass(targetType: TargetType) {
+    val classElement = targetType.element
     val packageOfClass = this.elementUtils.getPackageOf(classElement).toString()
-    val builderClassName = autoDslClass.builderClassName
+    val builderClassName = targetType.builderName
 
     val generatedSourcesRoot: String = getGeneratedSourcesRoot()
     if (generatedSourcesRoot.isEmpty()) {
@@ -47,13 +49,22 @@ fun ProcessingEnvironment.generateClass(autoDslClass: AutoDslClass) {
         .primaryConstructor(FunSpec.constructorBuilder().build())
         .addAnnotation(AutoDslMarker::class)
 
-    if (autoDslClass.isClassInternalModifier) {
+    if (targetType.isInternal) {
         classBuilder.addModifiers(KModifier.INTERNAL)
     }
 
+
+    val typeMetadata: KotlinClassMetadata = classElement.kotlinMetadata as? KotlinClassMetadata ?: return
+
     // setup properties from the available constructor
-    autoDslClass.parameters.forEach { param ->
-        val builder = generateParamCode(param, classBuilderClassName)
+    targetType.constructor.parameters.forEach { param ->
+        val builder =
+            generateParamCode(
+                AutoDslParam(
+                    param.key, param.value,
+                    targetType.proto, typeMetadata.data.nameResolver
+                ), classBuilderClassName
+            )
         builder.imports.forEach { fileSpec.addImport(it.packageName, it.name) }
         builder.properties.forEach { classBuilder.addProperty(it) }
         builder.functions.forEach { classBuilder.addFunction(it) }
@@ -62,26 +73,26 @@ fun ProcessingEnvironment.generateClass(autoDslClass: AutoDslClass) {
 
     val classElementTypeName = classElement.asType().asTypeName()
     // add build function to create real object
-    val buildFunSpec = autoDslClass.createBuildFun(classElementTypeName)
+    val buildFunSpec = targetType.createBuildFun(classElementTypeName)
     classBuilder.addFunction(buildFunSpec)
 
     // create extension function for DSL
-    val extFun = autoDslClass.createDslExtFun(classBuilderClassName, classElementTypeName)
+    val extFun = targetType.createDslExtFun(classBuilderClassName, classElementTypeName)
 
     fileSpec.addFunction(extFun.build())
         .addType(classBuilder.build())
         .build().writeTo(file)
 }
 
-private fun AutoDslClass.createBuildFun(classElementTypeName: TypeName): FunSpec {
+private fun TargetType.createBuildFun(classElementTypeName: TypeName): FunSpec {
     return FunSpec.builder("build")
         .returns(classElementTypeName)
         // todo loop could be improved
-        .addStatement("return ${classElement.simpleName}(${parameters.joinToString { it.name }})")
+        .addStatement("return $name(${constructor.parameters.keys.joinToString { it }})")
         .build()
 }
 
-private fun AutoDslClass.createDslExtFun(
+private fun TargetType.createDslExtFun(
     classBuilderClassName: ClassName,
     classElementTypeName: TypeName
 ): FunSpec.Builder {
@@ -93,14 +104,14 @@ private fun AutoDslClass.createDslExtFun(
         )
     ).build()
 
-    val classElementAnnotation = classElement.getAnnotation(AutoDsl::class.java)
-    val extFunName = classElementAnnotation.getDslNameOrDefault(classElement.simpleName.toString().decapitalize())
+    val classElementAnnotation = element.getAnnotation(AutoDsl::class.java)
+    val extFunName = classElementAnnotation.getDslNameOrDefault(element.simpleName.toString().decapitalize())
     val extFun = FunSpec.builder(extFunName)
         .addParameter(extensionFunParams)
         .returns(classElementTypeName)
-        .addStatement("return $builderClassName().apply($BLOCK_FUN_NAME).build()")
+        .addStatement("return $builderName().apply($BLOCK_FUN_NAME).build()")
 
-    if (this.isClassInternalModifier) {
+    if (isInternal) {
         extFun.addModifiers(KModifier.INTERNAL)
     }
     return extFun

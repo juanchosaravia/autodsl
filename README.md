@@ -4,9 +4,7 @@ for your Kotlin projects using annotations.
 
 [ ![Download](https://api.bintray.com/packages/juanchosaravia/autodsl/com.juanchosaravia.autodsl%3Aprocessor/images/download.svg) ](https://bintray.com/juanchosaravia/autodsl/com.juanchosaravia.autodsl%3Aprocessor/_latestVersion)
 
-No more boilerplate code to create your own DSL. 
-
-Create expressive and type-safe DSL like this:
+**No more boilerplate code** to create your own DSL. Create expressive and type-safe DSL like this:
 ```kotlin
 person {
     name = "Juan"
@@ -90,11 +88,8 @@ For more Examples
 ```groovy
 repositories {
     maven { url "https://dl.bintray.com/juanchosaravia/autodsl" }
-    maven { url "https://kotlin.bintray.com/kotlinx/" }
 }
 ```
-*Note: kotlinx is only available from bintray so we are forced to 
-add this repo for now and is going to be used just for the processor.* 
 
 ##### Add the dependencies
 ```groovy
@@ -103,13 +98,6 @@ dependencies {
     kapt "com.juanchosaravia.autodsl:processor:latest_version"
 }
 ```
-
-## Limitations
-* Does not support private constructors.
-* This [issue](https://github.com/square/kotlinpoet/issues/236) generates these limitations:
-  * Mutable collections are not supported as type in the constructor parameter (like MutableList or MutableCollection). 
-  Still you can use concrete types (ArrayList, HashSet) or non-mutable interfaces like List, Set, etc. See examples for more options.
-  * Does not support Nullable types inside other types like `List<String?>`
 
 ## Pending Features
 * Use the default values set in the class definition.
@@ -126,6 +114,23 @@ If you want to debug the processor do the following steps:
 2. In IntelliJ Idea go to Tools > Edit Configurations > press "+" icon in the left top corner.
 Add a new "Remote". Set a Name and check the "Single instance only" flag to true.
 3. Press "Debug" button to run the newly created "Remote" configuration.
+
+## Publish
+* Update version in release-brintray.gradle file:
+```text 
+libraryVersion = 'x.y.z'
+```
+* Setup bintray user and pass in local.properties:
+```text
+bintray.user=username
+bintray.apikey=apikey
+```
+* Run:
+```
+./gradlew :annotation:bintrayUpload
+./gradlew :processor:bintrayUpload
+```
+
 
 ## License
         
