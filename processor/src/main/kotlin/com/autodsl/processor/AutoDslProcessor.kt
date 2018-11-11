@@ -16,16 +16,17 @@
 package com.autodsl.processor
 
 import com.autodsl.annotation.AutoDsl
-import com.autodsl.processor.model.AutoDslClass
-import com.autodsl.processor.model.generateClass
+import com.autodsl.processor.internal.TargetType
+import com.autodsl.processor.internal.generateClass
 import com.google.auto.service.AutoService
+import me.eugeniomarletti.kotlin.metadata.KotlinClassMetadata
+import me.eugeniomarletti.kotlin.metadata.KotlinMetadata
+import me.eugeniomarletti.kotlin.metadata.kotlinMetadata
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.Processor
 import javax.annotation.processing.RoundEnvironment
 import javax.annotation.processing.SupportedOptions
 import javax.lang.model.SourceVersion
-import javax.lang.model.element.ElementKind
-import javax.lang.model.element.Modifier
 import javax.lang.model.element.TypeElement
 
 
@@ -37,41 +38,39 @@ import javax.lang.model.element.TypeElement
 class AutoDslProcessor : AbstractProcessor() {
 
     override fun process(annotations: MutableSet<out TypeElement>, roundEnv: RoundEnvironment): Boolean {
-        roundEnv.getElementsAnnotatedWith(AutoDsl::class.java).forEach { classElement ->
-            if (classElement.kind != ElementKind.CLASS) {
-                processingEnv.error(
-                    classElement,
-                    "Only classes can be annotated with %s.",
-                    AutoDsl::class.java.simpleName
-                )
-                return true
-            }
-            classElement as TypeElement
+        roundEnv.getElementsAnnotatedWith(AutoDsl::class.java)
+            .asSequence()
+            .map { it as TypeElement }
+            .forEach { classElement ->
+                val typeMetadata: KotlinMetadata? = classElement.kotlinMetadata
+                if (typeMetadata !is KotlinClassMetadata) {
+                    processingEnv.error(
+                        classElement,
+                        "@AutoDsl must be used in a Kotlin class, cannot be used in $classElement"
+                    )
+                    return@forEach
+                }
 
-            val modifiers = classElement.modifiers
-            // check class is public and not abstract
-            if (!modifiers.contains(Modifier.PUBLIC) || modifiers.contains(Modifier.ABSTRACT)) {
-                processingEnv.error(
-                    classElement,
-                    "The class %s is not public or is abstract.",
-                    classElement.qualifiedName.toString()
-                )
-                return true
-            }
+                try {
+                    val targetType = TargetType.get(
+                        processingEnv.messager,
+                        processingEnv.elementUtils,
+                        classElement
+                    ) ?: return@forEach
 
-            try {
-                processingEnv.generateClass(AutoDslClass(classElement))
-            } catch (pe: ProcessingException) {
-                processingEnv.error(pe)
-            } catch (e: Throwable) {
-                processingEnv.error(
-                    classElement,
-                    "There was an error while processing your annotated classes. error = ${e.message.orEmpty()}"
-                )
-                return true
+                    processingEnv.generateClass(targetType)
+                } catch (pe: ProcessingException) {
+                    processingEnv.error(pe)
+                    return@forEach
+                } catch (e: Throwable) {
+                    processingEnv.error(
+                        classElement,
+                        "There was an error while processing your annotated classes. error = ${e.message.orEmpty()}"
+                    )
+                    return@forEach
+                }
             }
-        }
-        return false // false=continue; true=exit process
+        return true // false=continue; true=exit process
     }
 
     override fun getSupportedAnnotationTypes(): MutableSet<String> {

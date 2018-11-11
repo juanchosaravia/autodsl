@@ -20,7 +20,7 @@ import com.autodsl.annotation.AutoDslCollection
 import com.autodsl.annotation.AutoDslConstructor
 import java.util.*
 
-@AutoDsl // indicates to create an associated Builder for this class
+@AutoDsl // indicates to create an associated DSL for this class
 class Person(
     val name: String,
     val age: Int,
@@ -58,7 +58,7 @@ class Location {
 @AutoDsl
 internal class Box( // supports internal classes
     val items: Set<String>,
-    val stamps: List<Stamp>?
+    val stamps: MutableList<Stamp>?
 )
 
 @AutoDsl

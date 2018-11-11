@@ -15,7 +15,6 @@ allprojects {
 
     repositories {
         mavenCentral()
-        maven { url "https://kotlin.bintray.com/kotlinx/" }
     }
     dependencies {
         implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"

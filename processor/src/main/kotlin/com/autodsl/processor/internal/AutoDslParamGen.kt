@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.autodsl.processor.model
+package com.autodsl.processor.internal
 
 import com.autodsl.annotation.AutoDslMarker
 import com.autodsl.processor.*
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.plusParameter
 import javax.annotation.processing.ProcessingEnvironment
+import javax.lang.model.element.TypeElement
 import javax.lang.model.type.DeclaredType
 import javax.lang.model.type.MirroredTypeException
 import kotlin.properties.Delegates
@@ -27,7 +28,7 @@ import kotlin.properties.Delegates
 /**
  * Generates code for [AutoDslParam].
  */
-fun ProcessingEnvironment.generateParamCode(
+internal fun ProcessingEnvironment.generateParamCode(
     param: AutoDslParam,
     builderClassName: ClassName
 ): AutoDslParamSpec {
@@ -77,7 +78,7 @@ private fun createWithFun(
 ): FunSpec.Builder {
     val paramName = param.name
     return FunSpec.builder("with${paramName.capitalize()}")
-        .addParameter(paramName, param.kotlinTypeName)
+        .addParameter(paramName, param.typeName)
         .returns(builderClassName)
         .addStatement("return this.apply { this.$paramName = $paramName}")
 }
@@ -85,7 +86,7 @@ private fun createWithFun(
 private fun createPropertySpec(
     param: AutoDslParam
 ): PropertySpec.Builder {
-    val propBuilder = PropertySpec.builder(param.name, param.kotlinTypeName).mutable()
+    val propBuilder = PropertySpec.builder(param.name, param.typeName).mutable()
     if (param.isNullable()) {
         // nullable element
         propBuilder.initializer("null")
@@ -101,9 +102,11 @@ private fun createFunIfSupportedCollectionAndNoAnnotation(
     builderClassName: ClassName
 ): AutoDslCollectionData? {
     val concreteClassName =
-        when ((param.kotlinTypeName as? ParameterizedTypeName)?.rawType?.canonicalName) {
+        when ((param.typeName as? ParameterizedTypeName)?.rawType?.canonicalName) {
             Constants.LIST_TYPE_NAME -> ArrayList::class.asClassName()
+            Constants.MUTABLE_LIST_TYPE_NAME -> ArrayList::class.asClassName()
             Constants.SET_TYPE_NAME -> HashSet::class.asClassName()
+            Constants.MUTABLE_SET_TYPE_NAME -> HashSet::class.asClassName()
             else -> {
                 return null
             }
@@ -119,15 +122,19 @@ private fun createFunIfAnnotatedWithCollection(
         ?: return null
 
     val collectionAnnotationClassName: ClassName = try {
-        collectionAnnotation.concreteType.asClassName().javaToKotlinType() as ClassName
+        collectionAnnotation.concreteType.asClassName()
     } catch (e: MirroredTypeException) {
         if (e.typeMirror !is DeclaredType) {
             throw ProcessingException(
                 param.element,
-                "The given type is not supported by AutoDslCollection. Make sure the selected class is a DeclaredType."
+                "The given type is not supported by AutoDslCollection. Not able to retrieve type."
             )
         }
-        (e.typeMirror as DeclaredType).asTypeName().javaToKotlinType() as ClassName
+        ((e.typeMirror as DeclaredType).asElement() as? TypeElement)?.asClassName()
+            ?: throw ProcessingException(
+                param.element,
+                "The given type is not supported by AutoDslCollection. Type or class not resolved."
+            )
     }
 
     return createCollectionData(param, builderClassName, collectionAnnotationClassName)
@@ -139,7 +146,7 @@ private fun createCollectionData(
     concreteCollectionClassName: ClassName
 ): AutoDslCollectionData {
     val parameterizedClassName =
-        ((param.jvmTypeName as? ParameterizedTypeName)?.typeArguments?.get(0)?.javaToKotlinType() as? ClassName)
+        ((param.typeName as? ParameterizedTypeName)?.typeArguments?.get(0) as? ClassName)
             ?: throw ProcessingException(param.element, "Collection has no parameterized value")
     /*
     Review: This could be improved if we detect there is no repeated parameterized type so we can create a list
@@ -203,7 +210,7 @@ private fun createFunIfAnnotatedWithAutoDsl(
     builderClassName: ClassName,
     processingEnv: ProcessingEnvironment
 ): AutoDslFunctionData? {
-    val paramType = param.type
+    val paramType = param.typeInfo
     val paramTypeElementAnnotation = paramType.autoDslAnnotation ?: return null
 
     // fun address(block: AddressBuilder.() -> Unit): PersonBuilder = this.apply { this.address = AddressBuilder().apply(block).build() }

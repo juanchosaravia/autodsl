@@ -13,12 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.autodsl.processor
+package com.autodsl.processor.internal
 
-object Constants {
-    const val LIST_TYPE_NAME = "kotlin.collections.List"
-    const val MUTABLE_LIST_TYPE_NAME = "kotlin.collections.MutableList"
+const val BLOCK_FUN_NAME = "block"
 
-    const val SET_TYPE_NAME = "kotlin.collections.Set"
-    const val MUTABLE_SET_TYPE_NAME = "kotlin.collections.MutableSet"
-}
+internal fun String.toAutoDslBuilderName() = "${this}AutoDslBuilder"
+internal fun String.toAutoDslCollectionClassName() = "${this.capitalize()}AutoDslCollection"

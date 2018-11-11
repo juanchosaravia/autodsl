@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.autodsl.processor.model
+package com.autodsl.processor.internal
 
-class AutoDslImportSpec(
+internal class AutoDslImportSpec(
     val packageName: String,
     val name: String
 )

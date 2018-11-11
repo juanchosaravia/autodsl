@@ -13,12 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.autodsl.processor
+package com.autodsl.processor.internal
 
-object Constants {
-    const val LIST_TYPE_NAME = "kotlin.collections.List"
-    const val MUTABLE_LIST_TYPE_NAME = "kotlin.collections.MutableList"
+import me.eugeniomarletti.kotlin.metadata.shadow.metadata.ProtoBuf.ValueParameter
+import javax.lang.model.element.VariableElement
 
-    const val SET_TYPE_NAME = "kotlin.collections.Set"
-    const val MUTABLE_SET_TYPE_NAME = "kotlin.collections.MutableSet"
-}
+internal data class TargetParameter(
+    val name: String,
+    val proto: ValueParameter,
+    val index: Int,
+    val element: VariableElement
+)
