@@ -62,24 +62,22 @@ class PersonTest {
     }
 
     @Test
-    fun definedListOfStamps() {
-        val stampRedColor = "Red"
+    fun definedInlinedStamps() {
+        val usaStamp = "USA"
         val box = box {
             items {
                 +"Hello"
                 +"World"
             }
-            stamps {
-                +stamp {
-                    colors {
-                        +"Red"
-                        +"Yellow"
-                    }
+            +stamp {
+                names {
+                    +usaStamp
+                    +"ARG"
                 }
             }
         }
         assertEquals(2, box.items.size)
-        assertEquals(stampRedColor, box.stamps?.first()?.colors?.first())
+        assertEquals(usaStamp, box.stamps?.first()?.names?.first())
     }
 
     @Test

@@ -76,11 +76,11 @@ question mark like `friends`. The value will be null in
 case it's not set.
 
 ## Documentation
-Visit the Wiki for more details: [AutoDsl-Wiki](https://github.com/juanchosaravia/autodsl/wiki/AutoDsl-Wiki)
+Visit the Wiki for a full list of features and more details: [AutoDsl-Wiki](https://github.com/juanchosaravia/autodsl/wiki/AutoDsl-Wiki)
 
 For more Examples
 - Annotation examples: [Person.kt](app/src/main/kotlin/com/autodsl/app/Person.kt)
-- DSL examples Usage: [PersonTest.kt](app/src/test/kotlin/com/autodsl/app/PersonTest.kt)
+- DSL examples usage: [PersonTest.kt](app/src/test/kotlin/com/autodsl/app/PersonTest.kt)
 
 ## Download
 

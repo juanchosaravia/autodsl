@@ -58,10 +58,11 @@ class Location {
 @AutoDsl
 internal class Box( // supports internal classes
     val items: Set<String>,
-    val stamps: MutableList<Stamp>?
+    @AutoDslCollection(concreteType = ArrayList::class, inline = true)
+    val stamps: List<Stamp>?
 )
 
 @AutoDsl
 internal class Stamp(
-    val colors: List<String>
+    val names: List<String>
 )

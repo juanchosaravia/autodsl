@@ -1,5 +1,5 @@
 ext {
-    libraryVersion = '0.0.8'
+    libraryVersion = '0.0.9'
 
     def groupName = "com.juanchosaravia.autodsl"
     bintrayRepo = 'autodsl'

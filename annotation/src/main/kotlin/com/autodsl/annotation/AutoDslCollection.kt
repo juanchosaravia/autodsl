@@ -19,7 +19,9 @@ import kotlin.reflect.KClass
 
 /**
  * Indicates to create a DSL for the annotated Collection property with the specified [concreteType].
+ * Optional: [inline] will provides a unaryPlus for this collection at the Builder level.
  */
 @Retention(AnnotationRetention.SOURCE)
 @Target(AnnotationTarget.VALUE_PARAMETER)
-annotation class AutoDslCollection(val concreteType: KClass<*>)
+annotation class AutoDslCollection(val concreteType: KClass<*>,
+                                   val inline: Boolean = false)

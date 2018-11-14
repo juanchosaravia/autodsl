@@ -33,7 +33,7 @@ internal fun ProcessingEnvironment.generateParamCode(
     builderClassName: ClassName
 ): AutoDslParamSpec {
 
-    val properties = listOf(createPropertySpec(param).build())
+    val properties = mutableListOf(createPropertySpec(param).build())
     val imports = mutableListOf<AutoDslImportSpec>()
     val functions = mutableListOf<FunSpec>()
     val types = mutableListOf<TypeSpec>()
@@ -52,14 +52,19 @@ internal fun ProcessingEnvironment.generateParamCode(
         val autoDslCollectionData =
             createFunIfAnnotatedWithCollection(param, builderClassName)
         if (autoDslCollectionData != null) {
-
-            types.add(autoDslCollectionData.nestedClass)
+            autoDslCollectionData.nestedClass?.let {
+                types.add(it)
+            }
+            autoDslCollectionData.propertySpec?.let {
+                properties.add(it)
+            }
             functions.add(autoDslCollectionData.collectionFun)
         } else {
             // if not annotated then try to check for default supported collections
-            createFunIfSupportedCollectionAndNoAnnotation(param, builderClassName)?.let {
-                types.add(it.nestedClass)
-                functions.add(it.collectionFun)
+            createFunIfSupportedCollectionAndNoAnnotation(param, builderClassName)?.let { data ->
+                data.propertySpec?.let { properties.add(it) }
+                data.nestedClass?.let { types.add(it) }
+                functions.add(data.collectionFun)
             }
         }
     } catch (e: ProcessingException) {
@@ -160,27 +165,34 @@ private fun createCollectionData(
      */
 
     val paramName = param.name
-    val collectionFieldName = "collection"
+    val collectionFieldName = "_${paramName}AutoDslCollection"
+
+    val unaryPlusFunc = FunSpec.builder("unaryPlus")
+        .addModifiers(KModifier.OPERATOR)
+        .receiver(parameterizedClassName)
+        .addStatement("$collectionFieldName.add(this)")
+
+    val collectionPropertySpecBuilder = PropertySpec.builder(
+        collectionFieldName,
+        concreteCollectionClassName.plusParameter(parameterizedClassName)
+    )
+        .initializer("%T()", concreteCollectionClassName)
+
+    if (param.getAutoDslCollectionAnnotation()?.inline == true) {
+        return AutoDslCollectionData(
+            collectionFun = unaryPlusFunc
+                // includes assigment to param
+                .addStatement("$paramName = $collectionFieldName")
+                .build(),
+            propertySpec = collectionPropertySpecBuilder.apply { modifiers.add(KModifier.PRIVATE) }.build()
+        )
+    }
     val collectionClassNameValue = paramName.toAutoDslCollectionClassName() // todo review this
     val nestedClass = TypeSpec.classBuilder(collectionClassNameValue)
         .primaryConstructor(FunSpec.constructorBuilder().addModifiers(KModifier.INTERNAL).build())
         .addAnnotation(AutoDslMarker::class)
-        .addProperty(
-            PropertySpec.builder(
-                collectionFieldName,
-                concreteCollectionClassName.plusParameter(parameterizedClassName),
-                KModifier.INTERNAL
-            )
-                .initializer("%T()", concreteCollectionClassName)
-                .build()
-        )
-        .addFunction(
-            FunSpec.builder("unaryPlus")
-                .addModifiers(KModifier.OPERATOR)
-                .receiver(parameterizedClassName)
-                .addCode("$collectionFieldName.add(this)")
-                .build()
-        )
+        .addProperty(collectionPropertySpecBuilder.apply { modifiers.add(KModifier.INTERNAL) }.build())
+        .addFunction(unaryPlusFunc.build())
         .build()
 
     val collectionFun = FunSpec.builder(paramName)
@@ -202,7 +214,8 @@ private fun createCollectionData(
 
 private class AutoDslCollectionData(
     val collectionFun: FunSpec,
-    val nestedClass: TypeSpec
+    val nestedClass: TypeSpec? = null,
+    val propertySpec: PropertySpec? = null
 )
 
 private fun createFunIfAnnotatedWithAutoDsl(
