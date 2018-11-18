@@ -20,10 +20,6 @@ import com.autodsl.annotation.AutoDslCollection
 import com.autodsl.annotation.AutoDslConstructor
 import java.util.*
 
-class Person2(name: String?) {
-    val name = name ?: "Carlos Gardel"
-}
-
 @AutoDsl // indicates to create an associated DSL for this class
 class Person(
     val name: String,
