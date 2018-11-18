@@ -4,12 +4,12 @@ for your Kotlin projects using annotations.
 
 [ ![Download](https://api.bintray.com/packages/juanchosaravia/autodsl/com.juanchosaravia.autodsl%3Aprocessor/images/download.svg) ](https://bintray.com/juanchosaravia/autodsl/com.juanchosaravia.autodsl%3Aprocessor/_latestVersion)
 
-**No more boilerplate code** to create your own DSL. Create expressive and type-safe DSL like this:
+Create expressive, immutable and type-safe DSL **without boilerplate code**:
 ```kotlin
 person {
     name = "Juan"
     age = 34
-    createAddress {
+    newAddress {
         street = "200 Celebration Bv"
         zipCode = 34747
         location {
@@ -20,7 +20,7 @@ person {
     friends {
         +person {
             name = "Arturo"
-            age = 30
+            age = 28
         }
         +person {
             name = "Tiwa"
@@ -30,7 +30,7 @@ person {
 }
 ```
 
-To generate the previous DSL you just need these classes and AutoDsl:
+To generate the previous DSL you just need to provide your desired classes with `@AutoDsl`:
 ```kotlin
 @AutoDsl
 class Person(
@@ -40,7 +40,7 @@ class Person(
     val friends: List<Person>?
 )
 
-@AutoDsl("createAddress") // set custom name for DSL
+@AutoDsl("newAddress") // set custom name for DSL
 data class Address(      // can be used in data classes
     val street: String,
     val zipCode: Int,
@@ -75,8 +75,12 @@ To make it optional just set the property as nullable with the
 question mark like `friends`. The value will be null in 
 case it's not set.
 
+> Note: Default parameters in constructor is not currently supported 
+as there is no way to get that value in the process to generate the code.
+There is a workaround that you can use explained in the wiki page.
+
 ## Documentation
-Visit the Wiki for a full list of features and more details: [AutoDsl-Wiki](https://github.com/juanchosaravia/autodsl/wiki/AutoDsl-Wiki)
+Visit the Wiki for a full list of features and more details: [AutoDsl-Wiki](https://github.com/juanchosaravia/autodsl/wiki)
 
 For more Examples
 - Annotation examples: [Person.kt](app/src/main/kotlin/com/autodsl/app/Person.kt)
@@ -100,7 +104,6 @@ dependencies {
 ```
 
 ## Pending Features
-* Use the default values set in the class definition.
 * Support external builders with new annotation `@ManualDsl(type=MyBuilder::class)`.
 * Custom names for builders to improve integration with Java.
 

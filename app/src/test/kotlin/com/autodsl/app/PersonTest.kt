@@ -27,7 +27,7 @@ class PersonTest {
         val me = person {
             name = "Juan"
             age = 34
-            createAddress {
+            newAddress {
                 street = "200 Celebration Bv"
                 zipCode = 34747
                 location {
@@ -106,7 +106,7 @@ class PersonTest {
 
     @Test
     fun validStructureWithNoLocationAddress() {
-        createAddress {
+        newAddress {
             street = "Street"
             zipCode = 1000
         }
@@ -114,7 +114,7 @@ class PersonTest {
 
     @Test(expected = IllegalStateException::class)
     fun invalidAddressStructure() {
-        createAddress {
+        newAddress {
             street = "Street"
             location = Location()
         }
