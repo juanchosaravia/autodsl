@@ -1,8 +1,12 @@
-# Auto-DSL for Kotlin
+# AutoDsl for Kotlin
 Auto-generates [DSL (Domain Specific Language)](https://en.wikipedia.org/wiki/Domain-specific_language) 
 for your Kotlin projects using annotations.
 
 [ ![Download](https://api.bintray.com/packages/juanchosaravia/autodsl/com.juanchosaravia.autodsl%3Aprocessor/images/download.svg) ](https://bintray.com/juanchosaravia/autodsl/com.juanchosaravia.autodsl%3Aprocessor/_latestVersion)
+
+## Table of Contents
+1. [Documentation](#documentation)
+2. [Download](#download)
 
 Create expressive, immutable and type-safe DSL **without boilerplate code**:
 ```kotlin
@@ -77,7 +81,8 @@ case it's not set.
 
 > Note: Default parameters in constructor is not currently supported 
 as there is no way to get that value in the process to generate the code.
-There is a workaround that you can use explained in the wiki page.
+There is a workaround that you can use explained in the 
+[wiki page](https://github.com/juanchosaravia/autodsl/wiki).
 
 ## Documentation
 Visit the Wiki for a full list of features and more details: [AutoDsl-Wiki](https://github.com/juanchosaravia/autodsl/wiki)
@@ -85,6 +90,7 @@ Visit the Wiki for a full list of features and more details: [AutoDsl-Wiki](http
 For more Examples
 - Annotation examples: [Person.kt](app/src/main/kotlin/com/autodsl/app/Person.kt)
 - DSL examples usage: [PersonTest.kt](app/src/test/kotlin/com/autodsl/app/PersonTest.kt)
+- [Android Sample](samples/android-autodsl/README.md)
 
 ## Download
 
