@@ -49,7 +49,7 @@ class Person(
 data class Address(      // can be used in data classes
     val street: String,
     val zipCode: Int,
-    internal val location: Location?
+    val location: Location?
 )
 
 @AutoDsl
@@ -74,7 +74,7 @@ class Location {
 AutoDsl will be generating a builder class and extension function for 
 the annotated class providing this super expressive DSL. 
 
-For required parameters like `name` the DSL will throw an exception on 
+For required parameters like `name` the DSL will throw an exception at 
 runtime indicating exactly which field is missed.
 To make it optional just set the property as nullable with the 
 question mark like `friends`. The value will be null in 
@@ -83,7 +83,7 @@ case it's not set.
 > Note: Default parameters in constructor is not currently supported 
 as there is no way to get that value in the process to generate the code.
 There is a workaround that you can use explained in the 
-[wiki page](https://github.com/juanchosaravia/autodsl/wiki).
+[wiki page](https://github.com/juanchosaravia/autodsl/wiki#default-parameters).
 
 ## Documentation
 Visit the Wiki for a full list of features and more details: [AutoDsl-Wiki](https://github.com/juanchosaravia/autodsl/wiki)
