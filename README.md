@@ -2,6 +2,7 @@
 Auto-generates [DSL (Domain Specific Language)](https://en.wikipedia.org/wiki/Domain-specific_language) 
 for your Kotlin projects using annotations.
 
+[![CircleCI](https://circleci.com/gh/juanchosaravia/autodsl.svg?style=svg)](https://circleci.com/gh/juanchosaravia/autodsl)
 [ ![Download](https://api.bintray.com/packages/juanchosaravia/autodsl/com.juanchosaravia.autodsl%3Aprocessor/images/download.svg) ](https://bintray.com/juanchosaravia/autodsl/com.juanchosaravia.autodsl%3Aprocessor/_latestVersion)
 
 ## Table of Contents
