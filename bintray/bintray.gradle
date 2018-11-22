@@ -68,12 +68,20 @@ artifacts {
     archives sourcesJar
 }
 
+def bintrayUser = System.getenv("bintray_user")
+def bintrayKey = System.getenv("bintray_apikey")
+
 Properties properties = new Properties()
-properties.load(project.rootProject.file('local.properties').newDataInputStream())
+def propertiesFile = project.rootProject.file('local.properties')
+if (propertiesFile.exists()) {
+    properties.load(propertiesFile.newDataInputStream())
+    bintrayUser = properties.getProperty("bintray.user")
+    bintrayKey = properties.getProperty("bintray.apikey")
+}
 
 bintray {
-    user = properties.getProperty("bintray.user")
-    key = properties.getProperty("bintray.apikey")
+    user = bintrayUser
+    key = bintrayKey
 
     publish = true
     override = false
