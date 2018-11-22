@@ -58,7 +58,7 @@ class Location {
 @AutoDsl
 internal class Box( // supports internal classes
     val items: Set<String>,
-    @AutoDslCollection(concreteType = ArrayList::class, inline = true)
+    @AutoDslCollection(concreteType = LinkedList::class, inline = true) // custom concrete type
     val stamps: List<Stamp>?
 )
 

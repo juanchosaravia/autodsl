@@ -18,9 +18,11 @@ package com.autodsl.app
 import com.autodsl.app.general.Attempts
 import com.autodsl.app.general.scores
 import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertTrue
 import org.junit.Test
+import java.util.*
 
-class PersonTest {
+class AutoDslTest {
 
     @Test
     fun builderPersonTest() {
@@ -125,5 +127,22 @@ class PersonTest {
         person {
             name = "Pepe"
         }
+    }
+
+    @Test
+    fun validateCustomCollectionType() {
+        val box = box {
+            items {
+                +"Hello"
+                +"World"
+            }
+            +stamp {
+                names {
+                    +"ARG"
+                }
+            }
+        }
+
+        assertTrue(box.stamps is LinkedList)
     }
 }

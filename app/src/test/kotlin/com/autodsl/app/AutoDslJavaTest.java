@@ -17,7 +17,7 @@ package com.autodsl.app;
 
 import org.junit.Test;
 
-public class PersonJavaTest {
+public class AutoDslJavaTest {
 
     @Test
     public void testPerson() {

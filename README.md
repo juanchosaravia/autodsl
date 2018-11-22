@@ -91,7 +91,7 @@ Visit the Wiki for a full list of features and more details: [AutoDsl-Wiki](http
 
 For more Examples
 - Annotation examples: [Person.kt](app/src/main/kotlin/com/autodsl/app/Person.kt)
-- DSL examples usage: [PersonTest.kt](app/src/test/kotlin/com/autodsl/app/PersonTest.kt)
+- DSL examples usage: [AutoDslTest.kt](app/src/test/kotlin/com/autodsl/app/AutoDslTest.kt)
 - [Android Sample](samples/android-autodsl/README.md)
 
 ## Download
