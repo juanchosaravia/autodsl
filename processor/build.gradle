@@ -1,8 +1,6 @@
 dependencies {
     implementation project(":annotation")
 
-    // kotlin reflect
-    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: "1.3.0"
     // kotlin metadata
     implementation "me.eugeniomarletti.kotlin.metadata:kotlin-metadata:1.4.0"
     implementation files("${System.properties['java.home']}/../lib/tools.jar")
