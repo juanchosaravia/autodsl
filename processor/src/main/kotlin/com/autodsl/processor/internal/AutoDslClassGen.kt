@@ -89,7 +89,7 @@ private fun TargetType.createBuildFun(classElementTypeName: TypeName): FunSpec {
     return FunSpec.builder("build")
         .returns(classElementTypeName)
         // todo loop could be improved
-        .addStatement("return $name(${constructor.parameters.keys.joinToString { it }})")
+        .addStatement("return $classElementTypeName(${constructor.parameters.keys.joinToString { it }})")
         .build()
 }
 

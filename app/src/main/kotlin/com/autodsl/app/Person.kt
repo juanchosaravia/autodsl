@@ -27,8 +27,12 @@ class Person(
     val address: Address?,
     val friends: List<Person>?,
     @AutoDslCollection(concreteType = TreeSet::class) // specify concrete type
-    val keys: Set<String>?
-)
+    val keys: Set<String>?,
+    val contact: Contact?
+) {
+    @AutoDsl
+    class Contact(val name: String)
+}
 
 @AutoDsl("newAddress")
 data class Address( // can be used in data classes

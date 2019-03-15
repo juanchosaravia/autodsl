@@ -48,8 +48,10 @@ class AutoDslTest {
                 }
             }
             keys = setOf("home_key", "work_key")
+            contact { name = "Test" }
         }
         assertEquals(2, me.friends?.size)
+        assertEquals("Test", me.contact?.name)
     }
 
     @Test
