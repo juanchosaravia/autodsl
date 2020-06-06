@@ -32,7 +32,7 @@ internal class AutoDslParam(
     val typeInfo = AutoDslParamType(element as Symbol.VarSymbol)
     val typeName = param.proto.type.asTypeName(nameResolver, protoClass::getTypeParameter)
 
-    fun isNullable() = typeName.nullable
+    fun isNullable() = typeName.isNullable
     fun getAutoDslCollectionAnnotation(): AutoDslCollection? = element.getAnnotation(AutoDslCollection::class.java)
 }
 
