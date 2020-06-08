@@ -20,6 +20,7 @@ import com.autodsl.app.general.scores
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
 import org.junit.Test
+import java.io.InvalidObjectException
 import java.util.*
 
 class AutoDslTest {
@@ -52,6 +53,9 @@ class AutoDslTest {
         }
         assertEquals(2, me.friends?.size)
         assertEquals("Test", me.contact?.name)
+        assertEquals("Juan", me.name)
+        assertEquals(34, me.age)
+        assertEquals(34747, me.address?.zipCode)
     }
 
     @Test
@@ -82,6 +86,28 @@ class AutoDslTest {
         }
         assertEquals(2, box.items.size)
         assertEquals(usaStamp, box.stamps?.first()?.names?.first())
+    }
+
+    @Test
+    fun sealedClassTest() {
+        val box = box {
+            items {
+                +"Hello World"
+            }
+            +stamp {
+                names {
+                    +"ARG"
+                }
+                type = goldStamp {
+                    price = 15.0
+                }
+            }
+        }
+
+        when (val stampType = box.stamps?.first()?.type) {
+            is GoldStamp -> assertEquals(15.0, stampType.price)
+            else -> throw InvalidObjectException("incorrect type solved.")
+        }
     }
 
     @Test
@@ -142,9 +168,18 @@ class AutoDslTest {
                 names {
                     +"ARG"
                 }
+                type = MetalStamp
+            }
+            +stamp {
+                names {
+                    +"ARG"
+                }
+                type = BronzeStamp
             }
         }
 
         assertTrue(box.stamps is LinkedList)
+        assertTrue(box.stamps?.first()?.type == MetalStamp)
+        assertTrue(box.stamps?.last()?.type == BronzeStamp)
     }
 }
