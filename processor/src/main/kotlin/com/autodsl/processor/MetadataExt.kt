@@ -65,12 +65,11 @@ internal fun ProtoBuf.Type.asTypeName(
     }
 
     if (hasFlexibleUpperBound()) {
-        return WildcardTypeName.subtypeOf(
+        return WildcardTypeName.consumerOf(
             flexibleUpperBound.asTypeName(nameResolver, getTypeParameter, useAbbreviatedType)
         )
-            .asNullableIf(nullable)
     } else if (hasOuterType()) {
-        return WildcardTypeName.supertypeOf(
+        return WildcardTypeName.consumerOf(
             outerType.asTypeName(nameResolver, getTypeParameter, useAbbreviatedType)
         )
             .asNullableIf(nullable)
@@ -101,23 +100,23 @@ internal fun ProtoBuf.Type.asTypeName(
                     .let { argumentTypeName ->
                         nullableProjection?.let { projection ->
                             when (projection) {
-                                ProtoBuf.Type.Argument.Projection.IN -> WildcardTypeName.supertypeOf(argumentTypeName)
+                                ProtoBuf.Type.Argument.Projection.IN -> WildcardTypeName.consumerOf(argumentTypeName)
                                 ProtoBuf.Type.Argument.Projection.OUT -> {
                                     if (argumentTypeName == ANY) {
                                         // This becomes a *, which we actually don't want here.
                                         // List<Any> works with List<*>, but List<*> doesn't work with List<Any>
                                         argumentTypeName
                                     } else {
-                                        WildcardTypeName.subtypeOf(argumentTypeName)
+                                        WildcardTypeName.consumerOf(argumentTypeName)
                                     }
                                 }
-                                ProtoBuf.Type.Argument.Projection.STAR -> WildcardTypeName.subtypeOf(ANY)
+                                ProtoBuf.Type.Argument.Projection.STAR -> WildcardTypeName.consumerOf(ANY)
                                 ProtoBuf.Type.Argument.Projection.INV -> TODO("INV projection is unsupported")
                             }
                         } ?: argumentTypeName
                     }
             } else {
-                WildcardTypeName.subtypeOf(ANY)
+                WildcardTypeName.consumerOf(ANY)
             }
         }.toTypedArray()
         typeName = (typeName as ClassName).parameterizedBy(*remappedArgs)

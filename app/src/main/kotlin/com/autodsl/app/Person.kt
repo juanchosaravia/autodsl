@@ -68,5 +68,6 @@ internal class Box( // supports internal classes
 
 @AutoDsl
 internal class Stamp(
-    val names: List<String>
+    val names: List<String>,
+    val type: StampType?
 )

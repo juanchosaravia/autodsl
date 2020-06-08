@@ -206,7 +206,8 @@ private fun createCollectionData(
             ).build()
         )
         .returns(builderClassName)
-        .addStatement("return this.apply { this.$paramName = $collectionClassNameValue().apply { $BLOCK_FUN_NAME() }.$collectionFieldName }")
+        .addStatement("this.$paramName = $collectionClassNameValue().apply { $BLOCK_FUN_NAME() }.$collectionFieldName")
+        .addStatement("return this")
         .build()
 
     return AutoDslCollectionData(collectionFun, nestedClass)
@@ -240,7 +241,8 @@ private fun createFunIfAnnotatedWithAutoDsl(
             ).build()
         )
         .returns(builderClassName)
-        .addStatement("return this.apply { this.${param.name} = $paramBuilderName().apply($BLOCK_FUN_NAME).build() }")
+        .addStatement("this.${param.name} = $paramBuilderName().apply($BLOCK_FUN_NAME).build()")
+        .addStatement("return this")
         .build()
 
     return AutoDslFunctionData(

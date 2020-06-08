@@ -4,9 +4,9 @@ dependencies {
     // kotlin metadata
     implementation "me.eugeniomarletti.kotlin.metadata:kotlin-metadata:1.4.0"
     implementation files("${System.properties['java.home']}/../lib/tools.jar")
-    implementation 'com.squareup:kotlinpoet:1.0.0-RC2'
-    implementation "com.google.auto.service:auto-service:1.0-rc4"
-    kapt "com.google.auto.service:auto-service:1.0-rc4"
+    implementation 'com.squareup:kotlinpoet:1.4.3'
+    implementation "com.google.auto.service:auto-service:1.0-rc7"
+    kapt "com.google.auto.service:auto-service:1.0-rc7"
 
     testImplementation group: 'junit', name: 'junit', version: '4.4'
 }

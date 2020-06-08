@@ -107,7 +107,7 @@ internal data class TargetType(
             return proto.typeParameterList.map {
                 val possibleBounds = it.upperBoundList
                     .map { it.asTypeName(nameResolver, proto::getTypeParameter, false) }
-                val typeVar = if (possibleBounds.isEmpty()) {
+                return@map if (possibleBounds.isEmpty()) {
                     TypeVariableName(
                         name = nameResolver.getString(it.name),
                         variance = it.varianceModifier
@@ -118,8 +118,7 @@ internal data class TargetType(
                         bounds = *possibleBounds.toTypedArray(),
                         variance = it.varianceModifier
                     )
-                }
-                return@map typeVar.reified(it.reified)
+                }.copy(reified = it.reified)
             }
         }
 
