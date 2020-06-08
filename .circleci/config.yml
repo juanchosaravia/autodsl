@@ -33,6 +33,11 @@ jobs:
           key: v1-gradle-cache-{{ checksum "build.gradle" }}
 
       - run:
+          name: Run Tests
+          command: |
+            ./gradlew test
+
+      - run:
           name: Assemble JAR
           command: |
             # Skip this for other nodes
