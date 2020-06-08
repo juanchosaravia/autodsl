@@ -24,21 +24,34 @@ jobs:
     steps:
     - checkout
 
-    # Download and cache dependencies
     - restore_cache:
-        keys:
-        - v1-dependencies-{{ checksum "build.gradle" }}
-        # fallback to using the latest cache if no exact match is found
-        - v1-dependencies-
+        key: v1-gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+    - restore_cache:
+        key: v1-gradle-cache-{{ checksum "build.gradle" }}
 
     - run: gradle dependencies
 
     - save_cache:
         paths:
-        - ~/.gradle
-        key: v1-dependencies-{{ checksum "build.gradle" }}
+          - ~/.gradle/wrapper
+        key: v1-gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+    - save_cache:
+        paths:
+          - ~/.gradle/caches
+        key: v1-gradle-cache-{{ checksum "build.gradle" }}
 
-    # run tests!
-    - run: gradle test
+    - run:
+        name: Assemble JAR
+        command: |
+          # Skip this for other nodes
+          if [ "$CIRCLE_NODE_INDEX" == 0 ]; then
+            ./gradlew assemble
+          fi
+    - store_artifacts:
+        path: build/libs
 
-
+workflows:
+  version: 2
+  workflow:
+    jobs:
+      - build
