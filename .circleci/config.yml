@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-    - image: circleci/openjdk:8-jdk
+      - image: circleci/openjdk:8-jdk
 
     working_directory: ~/repo
 
@@ -11,36 +11,36 @@ jobs:
       TERM: dumb
 
     steps:
-    - checkout
+      - checkout
 
-    - restore_cache:
-        key: v1-gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-    - restore_cache:
-        key: v1-gradle-cache-{{ checksum "build.gradle" }}
+      - restore_cache:
+          key: v1-gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+      - restore_cache:
+          key: v1-gradle-cache-{{ checksum "build.gradle" }}
 
-    - run:
-        name: Run Dependencies
-        command: |
-        ./gradlew test dependencies
+      - run:
+          name: Run Dependencies
+          command: |
+            ./gradlew dependencies
 
-    - save_cache:
-        paths:
-          - ~/.gradle/wrapper
-        key: v1-gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-    - save_cache:
-        paths:
-          - ~/.gradle/caches
-        key: v1-gradle-cache-{{ checksum "build.gradle" }}
+      - save_cache:
+          paths:
+            - ~/.gradle/wrapper
+          key: v1-gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+      - save_cache:
+          paths:
+            - ~/.gradle/caches
+          key: v1-gradle-cache-{{ checksum "build.gradle" }}
 
-    - run:
-        name: Assemble JAR
-        command: |
-          # Skip this for other nodes
-          if [ "$CIRCLE_NODE_INDEX" == 0 ]; then
-
-          fi
-    - store_artifacts:
-        path: build/libs
+      - run:
+          name: Assemble JAR
+          command: |
+            # Skip this for other nodes
+            if [ "$CIRCLE_NODE_INDEX" == 0 ]; then
+              ./gradlew build
+            fi
+      - store_artifacts:
+          path: build/libs
 
 workflows:
   version: 2
