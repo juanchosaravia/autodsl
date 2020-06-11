@@ -31,6 +31,6 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
     // AutoDsl
-    implementation "com.juanchosaravia.autodsl:annotation:$autodsl_version"
-    kapt "com.juanchosaravia.autodsl:processor:$autodsl_version"
+    implementation "io.github.juanchosaravia.autodsl:annotation:$autodsl_version"
+    kapt "io.github.juanchosaravia.autodsl:processor:$autodsl_version"
 }
