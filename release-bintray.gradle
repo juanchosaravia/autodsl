@@ -1,7 +1,7 @@
 ext {
     libraryVersion = '0.0.10'
 
-    def groupName = "com.juanchosaravia.autodsl"
+    def groupName = "io.github.juanchosaravia.autodsl"
     bintrayRepo = 'autodsl'
     bintrayName = "$groupName:$POM_ARTIFACT_ID"
 

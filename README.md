@@ -3,7 +3,7 @@ Auto-generates [DSL (Domain Specific Language)](https://en.wikipedia.org/wiki/Do
 for your Kotlin projects using annotations.
 
 [![CircleCI](https://circleci.com/gh/juanchosaravia/autodsl.svg?style=svg)](https://circleci.com/gh/juanchosaravia/autodsl)
-[ ![Download](https://api.bintray.com/packages/juanchosaravia/autodsl/com.juanchosaravia.autodsl%3Aprocessor/images/download.svg) ](https://bintray.com/juanchosaravia/autodsl/com.juanchosaravia.autodsl%3Aprocessor/_latestVersion)
+[ ![Download](https://api.bintray.com/packages/juanchosaravia/autodsl/io.github.juanchosaravia.autodsl%3Aprocessor/images/download.svg) ](https://bintray.com/juanchosaravia/autodsl/io.github.juanchosaravia.autodsl%3Aprocessor/_latestVersion)
 
 ## Table of Contents
 1. [Documentation](#documentation)
@@ -96,24 +96,21 @@ For more Examples
 
 ## Download
 
-##### Add repository:
+##### Add JCenter repository:
 ```groovy
 repositories {
-    maven { url "https://dl.bintray.com/juanchosaravia/autodsl" }
+    jcenter()
 }
 ```
 
 ##### Add the dependencies
+[ ![Download](https://api.bintray.com/packages/juanchosaravia/autodsl/io.github.juanchosaravia.autodsl%3Aprocessor/images/download.svg) ](https://bintray.com/juanchosaravia/autodsl/io.github.juanchosaravia.autodsl%3Aprocessor/_latestVersion)
 ```groovy
 dependencies {
-    api "com.juanchosaravia.autodsl:annotation:latest_version"
-    kapt "com.juanchosaravia.autodsl:processor:latest_version"
+    api "io.github.juanchosaravia.autodsl:annotation:latest_version"
+    kapt "io.github.juanchosaravia.autodsl:processor:latest_version"
 }
 ```
-
-## Pending Features
-* Support external builders with new annotation `@ManualDsl(type=MyBuilder::class)`.
-* Custom names for builders to improve integration with Java.
 
 ## Debug
 If you want to debug the processor do the following steps:
