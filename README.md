@@ -1,3 +1,10 @@
+#[DEPRECATED]
+Unfortunately, since Kotlin 1.4.x this library doesn't work anymore. It has a strong dependency on me.eugeniomarletti.kotlin.metadata:kotlin-metadata 
+lib which doesn't work anymore in 1.4.x to extract Kotlin Metadata.
+
+If you think this feature should be back into 1.4.x then please let me know in the Issue section, 
+probably we could invest some time trying to achieve the same with the new Kotlin Backend.
+
 # AutoDsl for Kotlin
 Auto-generates [DSL (Domain Specific Language)](https://en.wikipedia.org/wiki/Domain-specific_language) 
 for your Kotlin projects using annotations.
